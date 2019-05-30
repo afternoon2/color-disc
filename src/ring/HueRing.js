@@ -14,6 +14,14 @@ export default class HueRing extends HTMLElement {
 
   connectedCallback() {
     this._canvasId = uuid();
+    this._pickerId = uuid();
+    this._size = this.getAttribute('size');
+    this._outerRadius = this._size / 2;
+    this._innerRadius = this._size / 2.86;
+    this._cellWidth = this._size / 100;
+    this._cellHeight = this._outerRadius - this._innerRadius;
+    this._pointsAmount = 360;
+    this._globalRotation = -120;
     this._render();
     this._renderRing();
   }
@@ -42,6 +50,7 @@ export default class HueRing extends HTMLElement {
           <canvas id="${this._canvasId}"></canvas>
         </foreignObject>
         <g transform="translate(${halfSize} ${halfSize})">
+          <circle id="${this._pickerId}></circle>
         </g>
       </svg>
     `;
@@ -50,37 +59,24 @@ export default class HueRing extends HTMLElement {
   _renderRing() {
     const canvas = this.shadowRoot.getElementById(this._canvasId);
     const ctx = canvas.getContext('2d');
-    const size = this.getAttribute('size');
-    const outerRadius = size / 2;
-    const innerRadius = size / 2.86;
-    const cellWidth = size / 100;
-    const cellHeight = outerRadius - innerRadius;
-    const pointsAmount = 360;
-    const globalRotation = -120;
 
-    function init() {
-      canvas.width = size;
-      canvas.height = size;
-    }
+    canvas.width = this._size;
+    canvas.height = this._size;
 
-    function prepare() {
-      ctx.translate(outerRadius, outerRadius);
-      ctx.rotate(globalRotation * Math.PI / 180);
+    ctx.translate(this._outerRadius, this._outerRadius);
+    ctx.rotate(this._globalRotation * Math.PI / 180);
+    ctx.save();
+
+    for (let i = 1; i <= this._pointsAmount; i += 1) {
       ctx.save();
+      ctx.rotate(-(i * Math.PI / 180));
+      ctx.fillStyle = `hsl(${i}, 100%, 50%)`;
+      ctx.fillRect(0, this._innerRadius, this._cellWidth, this._cellHeight);
+      ctx.restore();
     }
-
-    function drawCells() {
-      for (let i = 1; i <= pointsAmount; i += 1) {
-        ctx.save();
-        ctx.rotate(-(i * Math.PI / 180));
-        ctx.fillStyle = `hsl(${i}, 100%, 50%)`;
-        ctx.fillRect(0, innerRadius, cellWidth, cellHeight);
-        ctx.restore();
-      }
-    }
-
-    init();
-    prepare();
-    drawCells();
   }
+
+  // _renderPicker() {
+  //   const picker = this.shadowRoot.getElementById(this._pickerId);
+  // }
 }
