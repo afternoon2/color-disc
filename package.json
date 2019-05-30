@@ -2,13 +2,15 @@
   "name": "color-disc",
   "version": "0.0.1",
   "description": "Procreate-like color picker as a web custom element",
-  "main": "index.js",
+  "main": "dist/smartsettings.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/afternoon2/color-disc"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack --config config/webpack.prod.js",
+    "build:dev": "webpack --config config/webpack.dev.js",
+    "start": "npm run build:dev && webpack-dev-server --config config/webpack.dev.js"
   },
   "keywords": [
     "color",
