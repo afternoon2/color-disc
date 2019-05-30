@@ -7,19 +7,16 @@ export default class Disc extends HTMLElement {
   }
 
   connectedCallback() {
-    this._defaultSize = 400;
+    this._size = this.getAttribute('size') || 400;
     this._mount();
   }
 
   _mount() {
     const { locals } = styles;
     this.shadowRoot.innerHTML = `
-      <div
-        class="${locals.colorDisc}"
-        style="width: ${this.getAttribute('size') || this._defaultSize}px; height: ${this.getAttribute('size') || this._defaultSize}px"
-      >
-        <main style="width: 100%; height: ${this.getAttribute('size') || this._defaultSize}px">
-          <hue-ring size="${this.getAttribute('size') || this._defaultSize}"></hue-ring>
+      <div class="${locals.colorDisc}">
+        <main>
+          <hue-ring size="${this._size}"></hue-ring>
         </main>
       </div>
     `;

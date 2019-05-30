@@ -6,16 +6,38 @@ export default class HueRing extends HTMLElement {
     this.attachShadow({ mode: 'open' });
   }
 
+  static get observedAttributes() {
+    return [
+      'size',
+    ];
+  }
+
   connectedCallback() {
     this._canvasId = uuid();
     this._render();
     this._renderRing();
   }
 
+  attributeChangedCallback(name, oldValue, newValue) {
+    const { shadowRoot } = this;
+    if (newValue !== oldValue && shadowRoot.childNodes.length > 0) {
+      switch (name) {
+        case 'size':
+          this._render();
+          this._renderRing();
+          break;
+      }
+    }
+  }
+
   _render() {
     const halfSize = this.getAttribute('size') / 2;
     this.shadowRoot.innerHTML = `
-      <svg width="100%" height="100%" xmlns="www.w3.org/2000/svg">
+      <svg
+        xmlns="www.w3.org/2000/svg"
+        width="${this.getAttribute('size')}"
+        height="${this.getAttribute('size')}"
+      >
         <foreignObject width="100%" height="100%">
           <canvas id="${this._canvasId}"></canvas>
         </foreignObject>
