@@ -1,22 +1,29 @@
 import styles from './disc.scss';
 
-export default class Disc extends HTMLElement {
+export default class ColorDisc extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
   }
 
   connectedCallback() {
-    this._size = this.getAttribute('size') || 400;
-    this._mount();
+    this._render();
   }
 
-  _mount() {
+  _render() {
     const { locals } = styles;
+    this.padding = 20;
+    this._size = (parseInt(this.getAttribute('size'), 10) || 350) + this.padding;
     this.shadowRoot.innerHTML = `
-      <div class="${locals.colorDisc}">
-        <main>
-          <hue-ring size="${this._size}"></hue-ring>
+      <style>
+        ${styles.toString().replace(/\n|\t/g, '')}
+      </style>
+      <div
+        class="${locals.colorDisc}"
+        style="width: ${this._size}px; height: ${this._size}px; left: calc(50% - ${this._size}px / 2)"
+      >
+        <main class="${locals.colorDisc__content}">
+          <hue-ring padding="${this.padding}" size="${this._size - this.padding * 2}"></hue-ring>
         </main>
       </div>
     `;

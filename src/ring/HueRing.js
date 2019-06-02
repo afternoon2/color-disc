@@ -1,4 +1,4 @@
-import uuid from '../utils/uuid';
+import styles from './hue-ring.scss';
 
 export default class HueRing extends HTMLElement {
   constructor() {
@@ -12,23 +12,8 @@ export default class HueRing extends HTMLElement {
     ];
   }
 
-  connectedCallback() {
-    this._canvasId = uuid();
-    this._pickerId = uuid();
-    this._size = this.getAttribute('size');
-    this._outerRadius = this._size / 2;
-    this._innerRadius = this._size / 2.86;
-    this._cellWidth = this._size / 100;
-    this._cellHeight = this._outerRadius - this._innerRadius;
-    this._pointsAmount = 360;
-    this._globalRotation = -120;
-    this._render();
-    this._renderRing();
-  }
-
   attributeChangedCallback(name, oldValue, newValue) {
-    const { shadowRoot } = this;
-    if (newValue !== oldValue && shadowRoot.childNodes.length > 0) {
+    if (newValue !== oldValue) {
       switch (name) {
         case 'size':
           this._render();
@@ -38,45 +23,180 @@ export default class HueRing extends HTMLElement {
     }
   }
 
+  connectedCallback() {
+    this.setAttribute('hue', 0);
+    this._render();
+    this._renderRing();
+    this._renderPicker();
+    this._addRingEvents();
+  }
+
   _render() {
-    const halfSize = this.getAttribute('size') / 2;
+    const { locals } = styles;
+    this._size = parseInt(this.getAttribute('size'), 10);
+    this._translation = this._size / 2;
     this.shadowRoot.innerHTML = `
-      <svg
-        xmlns="www.w3.org/2000/svg"
-        width="${this.getAttribute('size')}"
-        height="${this.getAttribute('size')}"
-      >
-        <foreignObject width="100%" height="100%">
-          <canvas id="${this._canvasId}"></canvas>
-        </foreignObject>
-        <g transform="translate(${halfSize} ${halfSize})">
-          <circle id="${this._pickerId}></circle>
-        </g>
-      </svg>
+      <style>
+        ${styles.toString().replace(/\n|\t/g, '')}
+      </style>
+      <div class="${locals.hueRing}">
+        <svg xmlns="www.w3.org/2000/svg" width="${this._size}" height="${this._size}">
+          <filter id="circle-shadow">
+            <feGaussianBlur stdDeviation="2" in="SourceAlpha" />
+            <feOffset dx="0" dy="0" result="offsetblur" />
+            <feMerge>
+              <feMergeNode />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <g id="picker-area" transform="translate(${this._translation} ${this._translation})">
+            <g id="color-cells"></g>
+          </g>
+        </svg>
+      </div>
     `;
   }
 
   _renderRing() {
-    const canvas = this.shadowRoot.getElementById(this._canvasId);
-    const ctx = canvas.getContext('2d');
+    this._outerRadius = this._size / 2;
+    this._innerRadius = this._size / 2.86;
+    this._cellWidth = this._size / 56;
+    this._cellHeight = this._outerRadius - this._innerRadius;
+    this._pointsAmount = 360;
 
-    canvas.width = this._size;
-    canvas.height = this._size;
+    const cells = this.shadowRoot.getElementById('color-cells');
 
-    ctx.translate(this._outerRadius, this._outerRadius);
-    ctx.rotate(this._globalRotation * Math.PI / 180);
-    ctx.save();
-
-    for (let i = 1; i <= this._pointsAmount; i += 1) {
-      ctx.save();
-      ctx.rotate(-(i * Math.PI / 180));
-      ctx.fillStyle = `hsl(${i}, 100%, 50%)`;
-      ctx.fillRect(0, this._innerRadius, this._cellWidth, this._cellHeight);
-      ctx.restore();
+    for (let i = 0; i <= this._pointsAmount; i += 1) {
+      cells.insertAdjacentHTML('beforeend', `
+          <rect
+            class="color-cell"
+            x="${this._innerRadius}"
+            y="0"
+            width="${this._cellHeight}"
+            height="${this._cellWidth}"
+            fill="hsl(${i}, 100%, 50%)"
+            transform="rotate(${i})"
+          />
+      `);
     }
   }
 
-  // _renderPicker() {
-  //   const picker = this.shadowRoot.getElementById(this._pickerId);
-  // }
+  _renderPicker() {
+    const { locals } = styles;
+    const { shadowRoot } = this;
+    const area = shadowRoot.getElementById('picker-area');
+    this._pickerRadius = this._cellHeight / 2;
+
+    area.insertAdjacentHTML('beforeend', `
+      <circle
+        class="${locals.hueRing__picker}"
+        id="hue-picker"
+        cx="${this._innerRadius + this._pickerRadius}"
+        cy="0"
+        r="${this._pickerRadius - 1}"
+        fill="hsl(0, 100%, 50%)"
+        stroke="#fcfcfc"
+        filter="url(#circle-shadow)"
+      />
+    `);
+    this.picker = shadowRoot.getElementById('hue-picker');
+    this._addPickerEvents();
+  }
+
+  _addRingEvents() {
+    const cells = this.shadowRoot.getElementById('color-cells');
+    cells.addEventListener(
+      'click',
+      () => {},
+    );
+  }
+
+  _addPickerEvents() {
+    const self = this;
+
+    function prevent(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+
+    function onMouseMove(e) {
+      const clientX = e.type === 'touchmove'
+        ? e.touches[0].clientX : e.clientX;
+
+      const clientY = e.type === 'touchmove'
+        ? e.touches[0].clientY : e.clientY;
+
+      const ringLeft = self.getBoundingClientRect().left;
+      const ringTop = self.getBoundingClientRect().top;
+      const middleX = ringLeft + self._outerRadius;
+      const middleY = ringTop + self._outerRadius;
+      const ringClientX = clientX - middleX;
+      const ringClientY = clientY - middleY;
+      const hue = self._getHueAngle({
+        x: ringClientX,
+        y: ringClientY,
+      });
+
+      self.setAttribute('hue', hue);
+
+      const radius = self._innerRadius + self._pickerRadius;
+      const currentRadius = Math.sqrt(
+        ringClientX * ringClientX + ringClientY * ringClientY,
+      );
+      const isRadiusDifferent = (currentRadius > radius || currentRadius < radius);
+
+      const x = isRadiusDifferent
+        ? radius * Math.cos(self._degToRad(hue)) : ringClientX;
+      const y = isRadiusDifferent
+        ? radius * Math.sin(self._degToRad(hue)) : ringClientY;
+
+      self.picker.setAttribute('cx', x);
+      self.picker.setAttribute('cy', y);
+      self.picker.setAttribute('fill', `hsl(${hue}, 100%, 50%)`);
+
+      // eslint-disable-next-line no-use-before-define
+      document.addEventListener('mouseup', onMouseUp);
+      // eslint-disable-next-line no-use-before-define
+      document.addEventListener('touchend', onMouseUp);
+
+      return prevent(e);
+    }
+
+    function onMouseDown(e) {
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('touchmove', onMouseMove);
+      return prevent(e);
+    }
+
+    function onMouseUp(e) {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('touchmove', onMouseMove);
+      document.removeEventListener('touchend', onMouseUp);
+      document.removeEventListener('mouseup', onMouseUp);
+      return prevent(e);
+    }
+
+
+    this.picker.addEventListener('mousedown', onMouseDown);
+    this.picker.addEventListener('touchstart', onMouseDown);
+  }
+
+  _getHueAngle(pos) {
+    let angle = Math.atan2(pos.y, pos.x);
+
+    if (angle < 0) {
+      angle += Math.PI * 2;
+    }
+
+    return this._radToDeg(angle);
+  }
+
+  _radToDeg(rad) {
+    return rad * 180 / Math.PI;
+  }
+
+  _degToRad(deg) {
+    return deg * Math.PI / 180;
+  }
 }
