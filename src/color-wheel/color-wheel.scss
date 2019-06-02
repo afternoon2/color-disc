@@ -1,0 +1,17 @@
+.colorWheel {
+  position: absolute;
+  z-index: 2;
+  background-color: pink;
+  border-radius: 50%;
+
+  &__wrapper {
+    position: relative;
+    width: 100%;
+    height: inherit;
+    overflow: hidden;
+  }
+
+  &__canvas {
+    position: absolute;
+  }
+}

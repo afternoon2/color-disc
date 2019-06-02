@@ -33,13 +33,14 @@ export default class HueRing extends HTMLElement {
 
   _render() {
     const { locals } = styles;
+    const padding = this.getAttribute('padding');
     this._size = parseInt(this.getAttribute('size'), 10);
     this._translation = this._size / 2;
     this.shadowRoot.innerHTML = `
       <style>
         ${styles.toString().replace(/\n|\t/g, '')}
       </style>
-      <div class="${locals.hueRing}">
+      <div class="${locals.hueRing}" style="top: ${padding}px; left: ${padding}px;">
         <svg xmlns="www.w3.org/2000/svg" width="${this._size}" height="${this._size}">
           <filter id="circle-shadow">
             <feGaussianBlur stdDeviation="2" in="SourceAlpha" />
@@ -117,6 +118,7 @@ export default class HueRing extends HTMLElement {
         self.picker.setAttribute('cy', coords.y);
         self.picker.setAttribute('fill', `hsl(${angle}, 100%, 50%)`);
         self.setAttribute('hue', angle);
+        return self._preventDefault(e);
       },
     );
   }

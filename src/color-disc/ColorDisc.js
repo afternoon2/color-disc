@@ -26,6 +26,7 @@ export default class ColorDisc extends HTMLElement {
           <hue-ring padding="${this.padding}" size="${this._size - this.padding * 2}"></hue-ring>
         </main>
       </div>
-    `;
+      `;
+    // <color-wheel size="${this._size - this.padding * 2}"></color-wheel>
   }
 }
