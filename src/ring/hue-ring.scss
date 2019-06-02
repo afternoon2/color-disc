@@ -1,5 +1,11 @@
 .hueRing {
+  box-sizing: border-box;
+
   &__picker {
     cursor: pointer;
   }
+}
+
+.colorCell {
+  cursor: pointer;
 }

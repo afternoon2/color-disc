@@ -69,13 +69,14 @@ export default class HueRing extends HTMLElement {
     for (let i = 0; i <= this._pointsAmount; i += 1) {
       cells.insertAdjacentHTML('beforeend', `
           <rect
-            class="color-cell"
+            class="${styles.locals.colorCell}"
             x="${this._innerRadius}"
             y="0"
             width="${this._cellHeight}"
             height="${this._cellWidth}"
             fill="hsl(${i}, 100%, 50%)"
             transform="rotate(${i})"
+            data-hue="${i}"
           />
       `);
     }
@@ -105,11 +106,17 @@ export default class HueRing extends HTMLElement {
   }
 
   _addRingEvents() {
+    const self = this;
     const cells = this.shadowRoot.getElementById('color-cells');
     cells.addEventListener(
       'click',
-      () => {
-        // const x = e.target.
+      (e) => {
+        const angle = e.target.getAttribute('data-hue');
+        const coords = self._getPickerPathXY(angle);
+        self.picker.setAttribute('cx', coords.x);
+        self.picker.setAttribute('cy', coords.y);
+        self.picker.setAttribute('fill', `hsl(${angle}, 100%, 50%)`);
+        self.setAttribute('hue', angle);
       },
     );
   }
@@ -128,10 +135,11 @@ export default class HueRing extends HTMLElement {
         currentRadius > self._pickerPathRadius
         || currentRadius < self._pickerPathRadius
       );
+      const pickerPathCoords = self._getPickerPathXY(hue);
       const x = isRadiusDifferent
-        ? self._pickerPathRadius * Math.cos(self._degToRad(hue)) : ringCoords.x;
+        ? pickerPathCoords.x : ringCoords.x;
       const y = isRadiusDifferent
-        ? self._pickerPathRadius * Math.sin(self._degToRad(hue)) : ringCoords.y;
+        ? pickerPathCoords.y : ringCoords.y;
 
       self.picker.setAttribute('cx', x);
       self.picker.setAttribute('cy', y);
@@ -166,7 +174,7 @@ export default class HueRing extends HTMLElement {
   _getHueAngle(coords) {
     let angle = Math.atan2(coords.y, coords.x);
     if (angle < 0) angle += Math.PI * 2;
-    return this._radToDeg(angle);
+    return Math.round(this._radToDeg(angle));
   }
 
   _radToDeg(rad) {
@@ -194,6 +202,13 @@ export default class HueRing extends HTMLElement {
         ? e.touches[0].clientX : e.clientX,
       y: e.type === 'touchmove'
         ? e.touches[0].clientY : e.clientY,
+    };
+  }
+
+  _getPickerPathXY(angle) {
+    return {
+      x: this._pickerPathRadius * Math.cos(this._degToRad(angle)),
+      y: this._pickerPathRadius * Math.sin(this._degToRad(angle)),
     };
   }
 
