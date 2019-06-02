@@ -1,4 +1,4 @@
-import styles from './disc.scss';
+import styles from './color-disc.scss';
 
 export default class ColorDisc extends HTMLElement {
   constructor() {

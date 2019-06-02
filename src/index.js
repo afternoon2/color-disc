@@ -1,4 +1,4 @@
-import Disc from './disc/Disc';
+import Disc from './disc/ColorDisc';
 import HueRing from './ring/HueRing';
 
 (() => {
