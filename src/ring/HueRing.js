@@ -107,66 +107,48 @@ export default class HueRing extends HTMLElement {
     const cells = this.shadowRoot.getElementById('color-cells');
     cells.addEventListener(
       'click',
-      () => {},
+      () => {
+        // const x = e.target.
+      },
     );
   }
 
   _addPickerEvents() {
     const self = this;
 
-    function prevent(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    }
-
     function onMouseMove(e) {
       const clientX = e.type === 'touchmove'
         ? e.touches[0].clientX : e.clientX;
-
       const clientY = e.type === 'touchmove'
         ? e.touches[0].clientY : e.clientY;
-
-      const ringLeft = self.getBoundingClientRect().left;
-      const ringTop = self.getBoundingClientRect().top;
-      const middleX = ringLeft + self._outerRadius;
-      const middleY = ringTop + self._outerRadius;
-      const ringClientX = clientX - middleX;
-      const ringClientY = clientY - middleY;
-      const hue = self._getHueAngle({
-        x: ringClientX,
-        y: ringClientY,
-      });
-
-      self.setAttribute('hue', hue);
-
+      const ringCoords = self._getRingClientCoordinates(clientX, clientY);
+      const hue = self._getHueAngle(ringCoords);
       const radius = self._innerRadius + self._pickerRadius;
       const currentRadius = Math.sqrt(
-        ringClientX * ringClientX + ringClientY * ringClientY,
+        ringCoords.x * ringCoords.x + ringCoords.y * ringCoords.y,
       );
       const isRadiusDifferent = (currentRadius > radius || currentRadius < radius);
-
       const x = isRadiusDifferent
-        ? radius * Math.cos(self._degToRad(hue)) : ringClientX;
+        ? radius * Math.cos(self._degToRad(hue)) : ringCoords.x;
       const y = isRadiusDifferent
-        ? radius * Math.sin(self._degToRad(hue)) : ringClientY;
+        ? radius * Math.sin(self._degToRad(hue)) : ringCoords.y;
 
       self.picker.setAttribute('cx', x);
       self.picker.setAttribute('cy', y);
       self.picker.setAttribute('fill', `hsl(${hue}, 100%, 50%)`);
-
+      self.setAttribute('hue', hue);
       // eslint-disable-next-line no-use-before-define
       document.addEventListener('mouseup', onMouseUp);
       // eslint-disable-next-line no-use-before-define
       document.addEventListener('touchend', onMouseUp);
 
-      return prevent(e);
+      return self._preventDefault(e);
     }
 
     function onMouseDown(e) {
       document.addEventListener('mousemove', onMouseMove);
       document.addEventListener('touchmove', onMouseMove);
-      return prevent(e);
+      return self._preventDefault(e);
     }
 
     function onMouseUp(e) {
@@ -174,9 +156,8 @@ export default class HueRing extends HTMLElement {
       document.removeEventListener('touchmove', onMouseMove);
       document.removeEventListener('touchend', onMouseUp);
       document.removeEventListener('mouseup', onMouseUp);
-      return prevent(e);
+      return self._preventDefault(e);
     }
-
 
     this.picker.addEventListener('mousedown', onMouseDown);
     this.picker.addEventListener('touchstart', onMouseDown);
@@ -184,11 +165,7 @@ export default class HueRing extends HTMLElement {
 
   _getHueAngle(pos) {
     let angle = Math.atan2(pos.y, pos.x);
-
-    if (angle < 0) {
-      angle += Math.PI * 2;
-    }
-
+    if (angle < 0) angle += Math.PI * 2;
     return this._radToDeg(angle);
   }
 
@@ -198,5 +175,22 @@ export default class HueRing extends HTMLElement {
 
   _degToRad(deg) {
     return deg * Math.PI / 180;
+  }
+
+  _getRingClientCoordinates(x, y) {
+    const ringLeft = this.getBoundingClientRect().left;
+    const ringTop = this.getBoundingClientRect().top;
+    const middleX = ringLeft + this._outerRadius;
+    const middleY = ringTop + this._outerRadius;
+    return {
+      x: x - middleX,
+      y: y - middleY,
+    };
+  }
+
+  _preventDefault(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
   }
 }
