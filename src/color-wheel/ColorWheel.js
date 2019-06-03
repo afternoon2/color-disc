@@ -19,9 +19,20 @@ export default class ColorWheel extends HTMLElement {
     this._init();
   }
 
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue !== newValue) {
+      switch (name) {
+        case 'size':
+          this._render();
+          this._init();
+          break;
+      }
+    }
+  }
+
   _render() {
     const { locals } = styles;
-    this._size = parseInt(this.getAttribute('size'), 10) / 1.7;
+    this._size = parseInt(this.getAttribute('size'), 10) * 0.5;
     const topAndLeft = `calc(50% - ${this._size / 2}px)`;
     const canvasId = uuid();
     this.shadowRoot.innerHTML = `
@@ -46,5 +57,12 @@ export default class ColorWheel extends HTMLElement {
   _init() {
     this._canvas.width = this._size;
     this._canvas.height = this._size;
+
+    const ctx = this._canvas.getContext('2d');
+
+    ctx.fillStyle = 'pink';
+    ctx.translate(this._size / 2, this._size / 2);
+    ctx.arc(0, 0, this._size, 0, Math.PI * 2);
+    ctx.fill();
   }
 }

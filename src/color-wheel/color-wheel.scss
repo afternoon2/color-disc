@@ -1,7 +1,5 @@
 .colorWheel {
   position: absolute;
-  z-index: 2;
-  background-color: pink;
   border-radius: 50%;
 
   &__wrapper {
@@ -13,5 +11,8 @@
 
   &__canvas {
     position: absolute;
+    cursor: pointer;
+    overflow: visible;
+    border-radius: 50%;
   }
 }

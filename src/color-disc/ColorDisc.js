@@ -6,14 +6,32 @@ export default class ColorDisc extends HTMLElement {
     this.attachShadow({ mode: 'open' });
   }
 
+  static get observedAttributes() {
+    return [
+      'size',
+      'color',
+    ];
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue !== newValue) {
+      switch (name) {
+        case 'size':
+          this._render();
+          break;
+      }
+    }
+  }
+
   connectedCallback() {
     this._render();
   }
 
+
   _render() {
     const { locals } = styles;
     this.padding = 20;
-    this._size = (parseInt(this.getAttribute('size'), 10) || 350) + this.padding;
+    this._size = (parseInt(this.getAttribute('size'), 10) || 390) - this.padding;
     this.shadowRoot.innerHTML = `
       <style>
         ${styles.toString().replace(/\n|\t/g, '')}
@@ -24,9 +42,9 @@ export default class ColorDisc extends HTMLElement {
       >
         <main class="${locals.colorDisc__content}">
           <hue-ring padding="${this.padding}" size="${this._size - this.padding * 2}"></hue-ring>
+          <color-wheel size="${this._size - this.padding * 2}"></color-wheel>
         </main>
       </div>
       `;
-    // <color-wheel size="${this._size - this.padding * 2}"></color-wheel>
   }
 }
