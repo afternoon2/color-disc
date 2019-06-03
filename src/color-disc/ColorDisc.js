@@ -25,6 +25,7 @@ export default class ColorDisc extends HTMLElement {
 
   connectedCallback() {
     this._render();
+    this._watchHue();
   }
 
 
@@ -42,9 +43,29 @@ export default class ColorDisc extends HTMLElement {
       >
         <main class="${locals.colorDisc__content}">
           <hue-ring padding="${this.padding}" size="${this._size - this.padding * 2}"></hue-ring>
-          <color-wheel size="${this._size - this.padding * 2}"></color-wheel>
+          <color-wheel size="${this._size - this.padding * 2}" hue="0"></color-wheel>
         </main>
       </div>
       `;
+  }
+
+  _watchHue() {
+    const hueRing = this.shadowRoot.querySelector('hue-ring');
+    const colorWheel = this.shadowRoot.querySelector('color-wheel');
+    const MutationObserver = window.MutationObserver
+      || window.WebKitMutationObserver
+      || window.MozMutationObserver;
+    const config = {
+      attributes: true,
+    };
+    const callback = function callback(mutationsList) {
+      mutationsList.forEach((mutation) => {
+        if (mutation.attributeName === 'hue') {
+          colorWheel.setAttribute('hue', hueRing.getAttribute('hue'));
+        }
+      });
+    };
+    const observer = new MutationObserver(callback);
+    observer.observe(hueRing, config);
   }
 }

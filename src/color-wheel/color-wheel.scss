@@ -1,6 +1,5 @@
 .colorWheel {
   position: absolute;
-  border-radius: 50%;
 
   &__wrapper {
     position: relative;
@@ -13,6 +12,5 @@
     position: absolute;
     cursor: pointer;
     overflow: visible;
-    border-radius: 50%;
   }
 }

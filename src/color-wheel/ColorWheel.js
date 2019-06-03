@@ -26,6 +26,10 @@ export default class ColorWheel extends HTMLElement {
           this._render();
           this._init();
           break;
+        case 'hue':
+          this._createBrightnessLayer();
+          this._createHueLayer();
+          break;
       }
     }
   }
@@ -58,11 +62,33 @@ export default class ColorWheel extends HTMLElement {
     this._canvas.width = this._size;
     this._canvas.height = this._size;
 
-    const ctx = this._canvas.getContext('2d');
+    this._ctx = this._canvas.getContext('2d');
 
-    ctx.fillStyle = 'pink';
-    ctx.translate(this._size / 2, this._size / 2);
-    ctx.arc(0, 0, this._size, 0, Math.PI * 2);
-    ctx.fill();
+    this._createBrightnessLayer();
+    this._createHueLayer();
+  }
+
+  _createBrightnessLayer() {
+    const brightnessGradient = this._ctx.createLinearGradient(0, 0, this._size, this._size);
+
+    brightnessGradient.addColorStop(0, '#ffffff');
+    brightnessGradient.addColorStop(1, '#000000');
+
+    this._ctx.clearRect(0, 0, this._size, this._size);
+    this._ctx.fillStyle = brightnessGradient;
+    this._ctx.fillRect(0, 0, this._size, this._size);
+  }
+
+  _createHueLayer() {
+    const hue = this.getAttribute('hue');
+    const hueGradient = this._ctx.createLinearGradient(0, 0, this._size, this._size);
+
+    hueGradient.addColorStop(0, `hsla(${hue}, 100%, 50%, 0)`);
+    hueGradient.addColorStop(1, `hsla(${hue}, 100%, 50%, 1)`);
+
+    this._ctx.fillStyle = hueGradient;
+    this._ctx.globalCompositeOperation = 'multiply';
+    this._ctx.fillRect(0, 0, this._size, this._size);
+    this._ctx.globalCompositeOperation = 'source-over';
   }
 }
