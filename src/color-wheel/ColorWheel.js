@@ -36,7 +36,7 @@ export default class ColorWheel extends HTMLElement {
 
   _render() {
     const { locals } = styles;
-    this._size = parseInt(this.getAttribute('size'), 10) * 0.5;
+    this._size = parseInt(this.getAttribute('size'), 10) * 0.48;
     const topAndLeft = `calc(50% - ${this._size / 2}px)`;
     const canvasId = uuid();
     this.shadowRoot.innerHTML = `
@@ -69,19 +69,21 @@ export default class ColorWheel extends HTMLElement {
   }
 
   _createBrightnessLayer() {
-    const brightnessGradient = this._ctx.createLinearGradient(0, 0, this._size, this._size);
+    const brightnessGradient = this._ctx.createLinearGradient(1, 1, 1, this._size);
 
-    brightnessGradient.addColorStop(0, '#ffffff');
-    brightnessGradient.addColorStop(1, '#000000');
+    brightnessGradient.addColorStop(0, 'white');
+    brightnessGradient.addColorStop(1, 'black');
 
-    this._ctx.clearRect(0, 0, this._size, this._size);
+    // this._ctx.clearRect(0, 0, this._size, this._size);
     this._ctx.fillStyle = brightnessGradient;
     this._ctx.fillRect(0, 0, this._size, this._size);
+    // this._ctx.arc(this._size / 2, this._size / 2, this._size / 2, 0, Math.PI * 2);
+    // this._ctx.fill();
   }
 
   _createHueLayer() {
     const hue = this.getAttribute('hue');
-    const hueGradient = this._ctx.createLinearGradient(0, 0, this._size, this._size);
+    const hueGradient = this._ctx.createLinearGradient(0, 0, this._size, 1);
 
     hueGradient.addColorStop(0, `hsla(${hue}, 100%, 50%, 0)`);
     hueGradient.addColorStop(1, `hsla(${hue}, 100%, 50%, 1)`);
@@ -89,6 +91,8 @@ export default class ColorWheel extends HTMLElement {
     this._ctx.fillStyle = hueGradient;
     this._ctx.globalCompositeOperation = 'multiply';
     this._ctx.fillRect(0, 0, this._size, this._size);
+    // this._ctx.arc(this._size / 2, this._size / 2, this._size / 2, 0, Math.PI * 2);
+    // this._ctx.fill();
     this._ctx.globalCompositeOperation = 'source-over';
   }
 }
