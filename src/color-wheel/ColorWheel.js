@@ -41,7 +41,7 @@ export default class ColorWheel extends HTMLElement {
     const canvasId = uuid();
     this.shadowRoot.innerHTML = `
       <style>
-      ${styles.toString().replace(/\n|\t/g, '')}
+        ${styles.toString().replace(/\n|\t/g, '')}
       </style>
       <div 
         class="${locals.colorWheel}"
