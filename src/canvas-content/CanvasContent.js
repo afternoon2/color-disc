@@ -73,7 +73,7 @@ export default class CanvasContent extends HTMLElement {
       const arc = new Konva.Arc({
         innerRadius,
         outerRadius,
-        fill: this.getRgb(i),
+        fill: math.getRgb(i),
         angle: -(i + 0.02),
       });
       arc.rotation(i);
@@ -86,7 +86,7 @@ export default class CanvasContent extends HTMLElement {
       x: innerRadius + this.pickerRadius,
       y: 0,
       radius: this.pickerRadius,
-      fill: this.getRgb(0),
+      fill: math.getRgb(0),
       stroke: 'white',
       shadowColor: 'rgba(0, 0, 0, 0.35)',
       shadowBlur: 2,
@@ -97,38 +97,6 @@ export default class CanvasContent extends HTMLElement {
     this.pointerOnHover(this.picker);
     this.ring.add(this.picker);
     this.stage.add(this.ring);
-  }
-
-  getRgb(h, s = 100, l = 50) {
-    s /= 100;
-    l /= 100;
-
-    const c = (1 - Math.abs(2 * l - 1)) * s;
-    // eslint-disable-next-line no-mixed-operators
-    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
-    const m = l - c / 2;
-    let r = 0;
-    let g = 0;
-    let b = 0;
-
-    if (h >= 0 && h < 60) {
-      r = c; g = x; b = 0;
-    } else if (h >= 60 && h < 120) {
-      r = x; g = c; b = 0;
-    } else if (h >= 120 && h < 180) {
-      r = 0; g = c; b = x;
-    } else if (h >= 180 && h < 240) {
-      r = 0; g = x; b = c;
-    } else if (h >= 240 && h < 300) {
-      r = x; g = 0; b = c;
-    } else if (h >= 300 && h < 360) {
-      r = c; g = 0; b = x;
-    }
-    r = Math.round((r + m) * 255);
-    g = Math.round((g + m) * 255);
-    b = Math.round((b + m) * 255);
-
-    return `rgb(${r}, ${g}, ${b})`;
   }
 
   onPickerDrag(pos) {
@@ -144,7 +112,7 @@ export default class CanvasContent extends HTMLElement {
       x: pos.x - this.size / 2,
       y: pos.y - this.size / 2,
     });
-    this.picker.fill(this.getRgb(this.hue));
+    this.picker.fill(math.getRgb(this.hue));
     const scale = r / Math.sqrt(
       ((pos.x - x) ** 2) + ((pos.y - y) ** 2),
     );
@@ -166,7 +134,7 @@ export default class CanvasContent extends HTMLElement {
     });
     this.angle = angle;
     this.hue = angle;
-    this.picker.fill(this.getRgb(this.hue));
+    this.picker.fill(math.getRgb(this.hue));
     this.stage.draw();
   }
 
