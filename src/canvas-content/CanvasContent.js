@@ -75,7 +75,7 @@ export default class CanvasContent extends HTMLElement {
         innerRadius,
         outerRadius,
         fill: math.getRgb(i),
-        angle: -(i + 0.02),
+        angle: -(i + 0.03),
       });
       arc.rotation(i);
       arc.on('click touch', this.onRingTouch.bind(this));
@@ -89,6 +89,7 @@ export default class CanvasContent extends HTMLElement {
       radius: this.pickerRadius,
       fill: math.getRgb(0),
       stroke: 'white',
+      strokeWidth: 1,
       shadowColor: 'rgba(0, 0, 0, 0.35)',
       shadowBlur: 2,
       shadowOffset: { x: 0, y: 2 },
