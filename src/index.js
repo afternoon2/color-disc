@@ -1,11 +1,9 @@
+import CanvasContent from './canvas-content/CanvasContent';
 import ColorDisc from './color-disc/ColorDisc';
-import HueRing from './hue-ring/HueRing';
-import ColorWheel from './color-wheel/ColorWheel';
 
 (() => {
   const elements = [
-    { tag: 'hue-ring', node: HueRing },
-    { tag: 'color-wheel', node: ColorWheel },
+    { tag: 'canvas-content', node: CanvasContent },
     { tag: 'color-disc', node: ColorDisc },
   ];
   elements.forEach((element) => {

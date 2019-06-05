@@ -30,7 +30,7 @@ export default {
     if (scale < 1 || scale > 1) {
       return {
         x: Math.round((position.x - x) * scale + x),
-        y: Math.round((position.y - y) * scale + y), 
+        y: Math.round((position.y - y) * scale + y),
       };
     }
     return position;
