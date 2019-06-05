@@ -158,9 +158,13 @@ export default class CanvasContent extends HTMLElement {
   onRingTouch(e) {
     const r = this.ringConfig.innerRadius + this.pickerRadius;
     const angle = e.currentTarget.attrs.rotation;
-    this.picker.position({
+    this.picker.setPosition({
       x: r * Math.cos(math.degToRad(angle)),
       y: r * Math.sin(math.degToRad(angle)),
     });
+    this.angle = angle;
+    this.hue = angle;
+    this.picker.fill(this.getRgb(this.hue));
+    this.stage.draw();
   }
 }
