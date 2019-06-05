@@ -58,6 +58,7 @@ export default class CanvasContent extends HTMLElement {
     this.ring = new Konva.Layer();
     this.wheel = new Konva.Layer();
     this.picker = null;
+    this.setAttribute('hue', 0);
   }
 
   renderRing() {
@@ -106,13 +107,14 @@ export default class CanvasContent extends HTMLElement {
     const r = innerRadius + this.pickerRadius;
     const x = this.stage.width() / 2;
     const y = this.stage.height() / 2;
-
-    this.angle = math.getAngleFromPos(pos);
-    this.hue = math.getAngleFromPos({
+    const hue = math.getAngleFromPos({
       x: pos.x - this.size / 2,
       y: pos.y - this.size / 2,
     });
-    this.picker.fill(math.getRgb(this.hue));
+
+    this.setAttribute('hue', hue);
+    this.angle = math.getAngleFromPos(pos);
+    this.picker.fill(math.getRgb(hue));
     const scale = r / Math.sqrt(
       ((pos.x - x) ** 2) + ((pos.y - y) ** 2),
     );
@@ -132,9 +134,10 @@ export default class CanvasContent extends HTMLElement {
       x: r * Math.cos(math.degToRad(angle)),
       y: r * Math.sin(math.degToRad(angle)),
     });
+    const hue = angle;
+    this.setAttribute('hue', hue);
     this.angle = angle;
-    this.hue = angle;
-    this.picker.fill(math.getRgb(this.hue));
+    this.picker.fill(math.getRgb(hue));
     this.stage.draw();
   }
 
