@@ -78,6 +78,7 @@ export default class CanvasContent extends HTMLElement {
       });
       arc.rotation(i);
       arc.on('click touch', this.onRingTouch.bind(this));
+      this.pointerOnHover(arc);
       this.ring.add(arc);
     }
 
@@ -93,6 +94,7 @@ export default class CanvasContent extends HTMLElement {
       draggable: true,
       dragBoundFunc: this.onPickerDrag.bind(this),
     });
+    this.pointerOnHover(this.picker);
     this.ring.add(this.picker);
     this.stage.add(this.ring);
   }
@@ -166,5 +168,14 @@ export default class CanvasContent extends HTMLElement {
     this.hue = angle;
     this.picker.fill(this.getRgb(this.hue));
     this.stage.draw();
+  }
+
+  pointerOnHover(shape) {
+    shape.on('mouseenter', () => {
+      this.stage.container().style.cursor = 'pointer';
+    });
+    shape.on('mouseleave', () => {
+      this.stage.container().style.cursor = 'default';
+    });
   }
 }
