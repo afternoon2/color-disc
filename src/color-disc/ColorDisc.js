@@ -41,7 +41,7 @@ export default class ColorDisc extends HTMLElement {
         style="width: ${this._size}px; height: ${this._size}px; left: calc(50% - ${this._size}px / 2)"
       >
         <main class="${locals.colorDisc__content}">
-          <canvas-content size="${this._size}"></canvas-content>
+          <canvas-content size="${this._size}" hue="0"></canvas-content>
         </main>
       </div>
       `;

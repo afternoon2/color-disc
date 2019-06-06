@@ -1,22 +1,16 @@
-import Konva from 'konva';
+import { Arc, Circle, Layer } from 'konva';
 import math from '../utils/math';
 
 export default (classElement) => {
   Object.defineProperties(classElement.prototype, {
     createRing: {
       value: function createRing() {
-        const {
-          innerRadius,
-          outerRadius,
-        } = this.config.ring;
-
-        this.ring = new Konva.Layer();
-        this.ring.offsetX(-(this.size / 2));
-        this.ring.offsetY(-(this.size / 2));
+        this.ring = new Layer();
+        this.alignCenter(this.ring);
         for (let i = 0; i < 360; i += 1) {
-          const arc = new Konva.Arc({
-            innerRadius,
-            outerRadius,
+          const arc = new Arc({
+            innerRadius: this.ringInnerRadius,
+            outerRadius: this.ringOuterRadius,
             fill: math.getRgb(i),
             angle: -(i + 0.03),
           });
@@ -29,10 +23,8 @@ export default (classElement) => {
     },
     createPicker: {
       value: function createPicker() {
-        const { innerRadius } = this.config.ring;
-
-        this.picker = new Konva.Circle({
-          x: innerRadius + this.pickerRadius,
+        this.picker = new Circle({
+          x: this.ringInnerRadius + this.pickerRadius,
           y: 0,
           radius: this.pickerRadius,
           stroke: 'white',
@@ -50,8 +42,7 @@ export default (classElement) => {
     },
     onPickerDrag: {
       value: function onPickerDrag(pos) {
-        const { innerRadius } = this.config.ring;
-        const r = innerRadius + this.pickerRadius;
+        const r = this.ringInnerRadius + this.pickerRadius;
         const x = this.stage.width() / 2;
         const y = this.stage.height() / 2;
         const hue = math.getAngleFromPos({
@@ -77,17 +68,22 @@ export default (classElement) => {
     },
     onRingTouch: {
       value: function onRingTouch(e) {
-        const r = this.config.ring.innerRadius + this.pickerRadius;
         const angle = e.currentTarget.attrs.rotation;
-        this.picker.setPosition({
-          x: r * Math.cos(math.degToRad(angle)),
-          y: r * Math.sin(math.degToRad(angle)),
-        });
+        this.setPickerPos(angle);
         const hue = angle;
         this.setAttribute('hue', hue);
         this.angle = angle;
         this.picker.fill(math.getRgb(hue));
         this.stage.draw();
+      },
+    },
+    setPickerPos: {
+      value: function setPickerPos(angle) {
+        const radius = this.ringInnerRadius + this.pickerRadius;
+        this.picker.setPosition({
+          x: radius * Math.cos(math.degToRad(angle)),
+          y: radius * Math.sin(math.degToRad(angle)),
+        });
       },
     },
   });

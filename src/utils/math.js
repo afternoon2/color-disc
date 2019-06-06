@@ -11,7 +11,7 @@ export default {
     if (radians) {
       return angle;
     }
-    return this.radToDeg(angle);
+    return Math.round(this.radToDeg(angle));
   },
   getPosFromDegAndRadius(deg, radius) {
     const angleRad = this.degToRad(deg);
@@ -20,7 +20,7 @@ export default {
       y: radius * Math.sin(angleRad),
     };
   },
-  getRgb(h, s = 100, l = 50) {
+  getRgb(h, s = 100, l = 50, objectOutput = false) {
     s /= 100;
     l /= 100;
 
@@ -49,6 +49,13 @@ export default {
     g = Math.round((g + m) * 255);
     b = Math.round((b + m) * 255);
 
+    if (objectOutput) {
+      return {
+        r,
+        g,
+        b,
+      };
+    }
     return `rgb(${r}, ${g}, ${b})`;
   },
 };
