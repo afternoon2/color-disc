@@ -11,7 +11,8 @@ export default (classElement) => {
           radius: this.wheelRadius,
         };
 
-        this.wheelRadius = this.size / 3.5;
+        this.wheelSize = this.size / 1.75;
+        this.wheelRadius = this.wheelSize / 2;
         this.wheel = new Layer();
 
         this.wheel.offsetX(-this.size / 2);
@@ -23,7 +24,7 @@ export default (classElement) => {
             y: -this.wheelRadius,
           },
           fillLinearGradientEndPoint: {
-            x: this.wheelRadius,
+            x: 0,
             y: this.wheelRadius,
           },
           fillLinearGradientColorStops: [0.2, 'white', 0.8, 'black'],
@@ -31,7 +32,7 @@ export default (classElement) => {
           ...gradientConfig,
         });
         this.wheel.add(this.brightnessGradient);
-
+        this.pointerOnHover(this.wheel);
         this.hueGradient = new Circle({
           fillLinearGradientStartPoint: {
             x: -this.wheelRadius,
