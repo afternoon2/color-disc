@@ -15,7 +15,7 @@ export default (classElement) => {
             angle: -(i + 0.03),
           });
           arc.rotation(i);
-          arc.on('click touch', this.onRingTouch.bind(this));
+          arc.on('click touchstart', this.onRingTouch.bind(this));
           this.pointerOnHover(arc);
           this.ring.add(arc);
         }

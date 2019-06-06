@@ -26,7 +26,7 @@ export default (classElement) => {
             x: this.wheelRadius,
             y: this.wheelRadius,
           },
-          fillLinearGradientColorStops: [0.1, 'white', 0.9, 'black'],
+          fillLinearGradientColorStops: [0.2, 'white', 0.8, 'black'],
           globalCompositeOperation: 'source-over',
           ...gradientConfig,
         });
@@ -47,7 +47,6 @@ export default (classElement) => {
         });
 
         this.wheel.add(this.hueGradient);
-        // this.wheel.add(testCircle);
         this.stage.add(this.wheel);
       },
     },
@@ -58,7 +57,7 @@ export default (classElement) => {
         const hsl = math.getRgb(_hue, 100, 50, true);
         const startPoint = `rgba(${Object.values(hsl)}, 0)`;
         const endPoint = `rgba(${Object.values(hsl)}, 1)`;
-        return [0, startPoint, 0.9, endPoint];
+        return [0.03, startPoint, 0.97, endPoint];
       },
     },
 
