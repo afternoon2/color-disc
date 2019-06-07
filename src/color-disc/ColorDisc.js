@@ -31,7 +31,7 @@ export default class ColorDisc extends HTMLElement {
   _render() {
     const { locals } = styles;
     this.padding = 20;
-    this._size = (parseInt(this.getAttribute('size'), 10) || 390) - this.padding;
+    this._size = (parseInt(this.getAttribute('size'), 10) || 390);
     this.shadowRoot.innerHTML = `
       <style>
         ${styles.toString().replace(/\n|\t/g, '')}

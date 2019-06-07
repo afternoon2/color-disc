@@ -12,7 +12,9 @@ export default (classElement) => {
             innerRadius: this.ringInnerRadius,
             outerRadius: this.ringOuterRadius,
             fill: math.getRgb(i),
-            angle: -(i + 0.03),
+            angle: -(i + 0.1),
+            stroke: 'transparent',
+            strokeWidth: 0.5,
           });
           arc.rotation(i);
           arc.on('click touchstart', this.onRingTouch.bind(this));
