@@ -2,6 +2,9 @@ const path = require('path');
 
 module.exports = {
   entry: path.resolve(__dirname, '../src/index.js'),
+  externals: {
+    Konva: 'konva'
+  },
   output: {
     path: path.resolve(__dirname, '../dist'),
     filename: 'color-disc.js',
