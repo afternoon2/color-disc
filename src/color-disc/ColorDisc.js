@@ -45,7 +45,7 @@ export default class ColorDisc extends HTMLElement {
           size="${this._size}"
           padding="${this.padding}"
           color="${this.getAttribute('color')}"
-        "></color-stage>
+        ></color-stage>
       </div>
       `;
   }

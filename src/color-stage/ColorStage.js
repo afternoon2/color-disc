@@ -172,4 +172,19 @@ export default class ColorStage extends HTMLElement {
       y: e.clientY - this.parentElement.offsetTop,
     };
   }
+
+  __getClientXY(e) {
+    return {
+      x: e.type === 'touchmove'
+        ? e.touches[0].clientX : e.clientX,
+      y: e.type === 'touchmove'
+        ? e.touches[0].clientY : e.clientY,
+    };
+  }
+
+  __preventDefault(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+  }
 }
