@@ -15,6 +15,7 @@ export default class ColorStage extends HTMLElement {
     this.__mount();
     this.__initCanvasEnvironment();
     this.__drawHueRing();
+    this.__drawWheel();
     this.__addCanvasListeners();
   }
 
@@ -58,7 +59,7 @@ export default class ColorStage extends HTMLElement {
     const sceneCtx = this.__sceneCtx;
     const hitCtx = this.__hitCtx;
 
-    for (let i = 1; i <= 360; i += 1) {
+    for (let i = 0; i < 360; i += 1) {
       sceneCtx.save();
       sceneCtx.rotate(math.degToRad(i));
       const p1 = [this.hueRingInnerR, 0];
@@ -91,6 +92,25 @@ export default class ColorStage extends HTMLElement {
     hitCtx.closePath();
   }
 
+  __drawWheel() {
+    const sceneCtx = this.__sceneCtx;
+    const hitCtx = this.__hitCtx;
+
+    this.__wheelR = this.hueRingOuterR / 1.61;
+    sceneCtx.beginPath();
+    sceneCtx.arc(0, 0, this.__wheelR, 0, Math.PI * 2);
+    sceneCtx.fillStyle = 'pink';
+    sceneCtx.closePath();
+    sceneCtx.fill();
+
+    this.__shapeRegistry.wheel = this.__getRandomColor();
+    hitCtx.beginPath();
+    hitCtx.arc(0, 0, this.__wheelR, 0, Math.PI * 2);
+    hitCtx.fillStyle = this.__shapeRegistry.wheel;
+    hitCtx.closePath();
+    hitCtx.fill();
+  }
+
   __getRandomColor() {
     const r = Math.round(Math.random() * 255);
     const g = Math.round(Math.random() * 255);
@@ -108,7 +128,10 @@ export default class ColorStage extends HTMLElement {
       };
       const { data } = this.__hitCtx.getImageData(mousePos.x, mousePos.y, 1, 1);
       const color = `rgb(${data[0]}, ${data[1]}, ${data[2]})`;
-      if (color === self.__shapeRegistry.ring) {
+      if (
+        color === self.__shapeRegistry.ring
+        || color === self.__shapeRegistry.wheel
+      ) {
         self.__scene.style.cursor = 'pointer';
       } else {
         self.__scene.style.cursor = 'default';
