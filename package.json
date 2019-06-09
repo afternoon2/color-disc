@@ -49,8 +49,5 @@
   },
   "files": [
     "dist"
-  ],
-  "dependencies": {
-    "konva": "^3.3.2"
-  }
+  ]
 }

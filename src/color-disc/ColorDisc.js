@@ -10,7 +10,6 @@ export default class ColorDisc extends HTMLElement {
     return [
       'size',
       'color',
-      'format',
     ];
   }
 
@@ -18,35 +17,55 @@ export default class ColorDisc extends HTMLElement {
     if (oldValue !== newValue) {
       switch (name) {
         case 'size':
-          this.__render();
+          this._render();
           break;
       }
     }
   }
 
   connectedCallback() {
-    this.__render();
+    this._render();
+    this._watchHue();
   }
 
-  __render() {
+
+  _render() {
     const { locals } = styles;
-    this.setAttribute('color', 'hsl(0, 100%, 50%)');
     this.padding = 20;
-    this._size = (parseInt(this.getAttribute('size'), 10) || 390);
+    this._size = (parseInt(this.getAttribute('size'), 10) || 390) - this.padding;
     this.shadowRoot.innerHTML = `
       <style>
         ${styles.toString().replace(/\n|\t/g, '')}
       </style>
       <div
         class="${locals.colorDisc}"
-        style="width: ${this._size}px; height: ${this._size}px;"
+        style="width: ${this._size}px; height: ${this._size}px; left: calc(50% - ${this._size}px / 2)"
       >
-        <color-stage
-          size="${this._size}"
-          padding="${this.padding}"
-          color="${this.getAttribute('color')}"
-        ></color-stage>
+        <main class="${locals.colorDisc__content}">
+          <hue-ring padding="${this.padding}" size="${this._size - this.padding * 2}"></hue-ring>
+          <color-wheel size="${this._size - this.padding * 2}" hue="0"></color-wheel>
+        </main>
       </div>
       `;
+  }
+
+  _watchHue() {
+    const hueRing = this.shadowRoot.querySelector('hue-ring');
+    const colorWheel = this.shadowRoot.querySelector('color-wheel');
+    const MutationObserver = window.MutationObserver
+      || window.WebKitMutationObserver
+      || window.MozMutationObserver;
+    const config = {
+      attributes: true,
+    };
+    const callback = function callback(mutationsList) {
+      mutationsList.forEach((mutation) => {
+        if (mutation.attributeName === 'hue') {
+          colorWheel.setAttribute('hue', hueRing.getAttribute('hue'));
+        }
+      });
+    };
+    const observer = new MutationObserver(callback);
+    observer.observe(hueRing, config);
   }
 }
