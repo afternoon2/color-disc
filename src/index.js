@@ -1,9 +1,9 @@
-import CanvasContent from './canvas-content/CanvasContent';
 import ColorDisc from './color-disc/ColorDisc';
+import ColorStage from './color-stage/ColorStage';
 
 (() => {
   const elements = [
-    { tag: 'canvas-content', node: CanvasContent },
+    { tag: 'color-stage', node: ColorStage },
     { tag: 'color-disc', node: ColorDisc },
   ];
   elements.forEach((element) => {

@@ -10,6 +10,7 @@ export default class ColorDisc extends HTMLElement {
     return [
       'size',
       'color',
+      'format',
     ];
   }
 
@@ -17,19 +18,19 @@ export default class ColorDisc extends HTMLElement {
     if (oldValue !== newValue) {
       switch (name) {
         case 'size':
-          this._render();
+          this.__render();
           break;
       }
     }
   }
 
   connectedCallback() {
-    this._render();
+    this.__render();
   }
 
-
-  _render() {
+  __render() {
     const { locals } = styles;
+    this.setAttribute('color', 'hsl(0, 100%, 50%)');
     this.padding = 20;
     this._size = (parseInt(this.getAttribute('size'), 10) || 390);
     this.shadowRoot.innerHTML = `
@@ -38,11 +39,13 @@ export default class ColorDisc extends HTMLElement {
       </style>
       <div
         class="${locals.colorDisc}"
-        style="width: ${this._size}px; height: ${this._size}px; left: calc(50% - ${this._size}px / 2)"
+        style="width: ${this._size}px; height: ${this._size}px;"
       >
-        <main class="${locals.colorDisc__content}">
-          <canvas-content size="${this._size}" hue="0"></canvas-content>
-        </main>
+        <color-stage
+          size="${this._size}"
+          padding="${this.padding}"
+          color="${this.getAttribute('color')}"
+        ></color-stage>
       </div>
       `;
   }
