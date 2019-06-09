@@ -1,5 +1,6 @@
 import uuid from '../utils/uuid';
 import math from '../utils/math';
+import styles from './color-stage.scss';
 
 export default class ColorStage extends HTMLElement {
   constructor() {
@@ -16,6 +17,7 @@ export default class ColorStage extends HTMLElement {
     this.__initCanvasEnvironment();
     this.__drawHueRing();
     this.__drawWheel();
+    this.__drawHuePicker();
     this.__addCanvasListeners();
   }
 
@@ -24,8 +26,12 @@ export default class ColorStage extends HTMLElement {
     const canvasStyle = 'position: absolute;';
 
     this.__sceneCanvasId = uuid();
+    this.__containerId = uuid();
     this.shadowRoot.innerHTML = `
-      <div style="${containerStyle}">
+      <style>
+        ${styles.toString().replace(/\n|\t/g, '')}
+      </style>
+      <div id="${this.__containerId}" style="${containerStyle}">
         <canvas id="${this.__sceneCanvasId}" style="${canvasStyle}"></canvas>
       </div>
     `;
@@ -46,15 +52,14 @@ export default class ColorStage extends HTMLElement {
     this.__scene.height = this.__size;
     this.__hitCanvas.width = this.__size;
     this.__hitCanvas.height = this.__size;
-    // document.body.appendChild(this.__hitCanvas);
     this.__sceneCtx.translate(this.__half, this.__half);
     this.__hitCtx.translate(this.__half, this.__half);
   }
 
   __drawHueRing() {
-    this.hueRingOuterR = this.__half - this.__padding;
-    this.hueRingInnerR = this.hueRingOuterR * 0.75;
-    this.hueRingRectH = this.hueRingOuterR - this.hueRingInnerR;
+    this.__hueRingOuterR = this.__half - this.__padding;
+    this.__hueRingInnerR = this.__hueRingOuterR * 0.75;
+    this.__hueRingRectH = this.__hueRingOuterR - this.__hueRingInnerR;
 
     const sceneCtx = this.__sceneCtx;
     const hitCtx = this.__hitCtx;
@@ -62,12 +67,12 @@ export default class ColorStage extends HTMLElement {
     for (let i = 0; i < 360; i += 1) {
       sceneCtx.save();
       sceneCtx.rotate(math.degToRad(i));
-      const p1 = [this.hueRingInnerR, 0];
-      const p2 = [this.hueRingOuterR, 0];
-      const p3 = Object.values(math.getPosFromDegAndRadius(1, this.hueRingOuterR));
-      const p4 = Object.values(math.getPosFromDegAndRadius(1, this.hueRingInnerR));
-      const p3Cp = Object.values(math.getPosFromDegAndRadius(0.5, this.hueRingOuterR));
-      const p4Cp = Object.values(math.getPosFromDegAndRadius(0.5, this.hueRingInnerR));
+      const p1 = [this.__hueRingInnerR, 0];
+      const p2 = [this.__hueRingOuterR, 0];
+      const p3 = Object.values(math.getPosFromDegAndRadius(1, this.__hueRingOuterR));
+      const p4 = Object.values(math.getPosFromDegAndRadius(1, this.__hueRingInnerR));
+      const p3Cp = Object.values(math.getPosFromDegAndRadius(0.5, this.__hueRingOuterR));
+      const p4Cp = Object.values(math.getPosFromDegAndRadius(0.5, this.__hueRingInnerR));
       sceneCtx.fillStyle = `hsl(${i}, 100%, 50%)`;
       sceneCtx.strokeStyle = `hsl(${i}, 100%, 50%)`;
       sceneCtx.moveTo(...p1);
@@ -86,8 +91,8 @@ export default class ColorStage extends HTMLElement {
     this.__shapeRegistry.ring = this.__getRandomColor();
     hitCtx.fillStyle = this.__shapeRegistry.ring;
     hitCtx.beginPath();
-    hitCtx.arc(0, 0, this.hueRingOuterR, 0, Math.PI * 2, false);
-    hitCtx.arc(0, 0, this.hueRingInnerR, 0, Math.PI * 2, true);
+    hitCtx.arc(0, 0, this.__hueRingOuterR, 0, Math.PI * 2, false);
+    hitCtx.arc(0, 0, this.__hueRingInnerR, 0, Math.PI * 2, true);
     hitCtx.fill();
     hitCtx.closePath();
   }
@@ -96,7 +101,7 @@ export default class ColorStage extends HTMLElement {
     const sceneCtx = this.__sceneCtx;
     const hitCtx = this.__hitCtx;
 
-    this.__wheelR = this.hueRingOuterR / 1.61;
+    this.__wheelR = this.__hueRingOuterR / 1.61;
     sceneCtx.beginPath();
     sceneCtx.arc(0, 0, this.__wheelR, 0, Math.PI * 2);
     sceneCtx.fillStyle = 'pink';
@@ -111,6 +116,21 @@ export default class ColorStage extends HTMLElement {
     hitCtx.fill();
   }
 
+  __drawHuePicker() {
+    const { locals } = styles;
+    const container = this.shadowRoot.getElementById(this.__containerId);
+
+    this.__huePicker = document.createElement('a');
+    this.__huePicker.classList.add(locals.huePicker);
+    this.__huePicker.style.width = `${this.__hueRingRectH}px`;
+    this.__huePicker.style.height = `${this.__hueRingRectH}px`;
+    this.__huePicker.style.backgroundColor = this.getAttribute('color');
+    this.__huePicker.style.left = `${this.__size - this.__padding - this.__hueRingRectH}px`;
+    this.__huePicker.style.top = `${this.__half - this.__hueRingRectH / 2}px`;
+
+    container.appendChild(this.__huePicker);
+  }
+
   __getRandomColor() {
     const r = Math.round(Math.random() * 255);
     const g = Math.round(Math.random() * 255);
@@ -122,10 +142,7 @@ export default class ColorStage extends HTMLElement {
   __addCanvasListeners() {
     const self = this;
     this.__scene.addEventListener('mousemove', (e) => {
-      const mousePos = {
-        x: e.clientX - self.parentElement.offsetLeft,
-        y: e.clientY - self.parentElement.offsetTop,
-      };
+      const mousePos = self.__getCanvasPos(e);
       const { data } = this.__hitCtx.getImageData(mousePos.x, mousePos.y, 1, 1);
       const color = `rgb(${data[0]}, ${data[1]}, ${data[2]})`;
       if (
@@ -147,5 +164,12 @@ export default class ColorStage extends HTMLElement {
   __restore() {
     this.__sceneCtx.restore();
     this.__hitCtx.restore();
+  }
+
+  __getCanvasPos(e) {
+    return {
+      x: e.clientX - this.parentElement.offsetLeft,
+      y: e.clientY - this.parentElement.offsetTop,
+    };
   }
 }
