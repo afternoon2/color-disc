@@ -13,6 +13,7 @@ export default class ColorStage extends HTMLElement {
   }
 
   __init() {
+    this.__hue = 0;
     this.__mount();
     this.__initCanvasEnvironment();
     this.__drawHueRing();
@@ -102,11 +103,35 @@ export default class ColorStage extends HTMLElement {
     const hitCtx = this.__hitCtx;
 
     this.__wheelR = this.__hueRingOuterR / 1.61;
+
+    const brightnessGradient = sceneCtx.createLinearGradient(
+      -this.__wheelR,
+      -this.__wheelR,
+      -this.__wheelR,
+      this.__wheelR,
+    );
+    brightnessGradient.addColorStop(0, 'white');
+    brightnessGradient.addColorStop(1, 'black');
+
+    const hueGradient = sceneCtx.createLinearGradient(
+      -this.__wheelR,
+      -this.__wheelR,
+      this.__wheelR,
+      -this.__wheelR,
+    );
+    hueGradient.addColorStop(0, `hsla(${this.__hue},100%,50%,0)`);
+    hueGradient.addColorStop(1, `hsla(${this.__hue},100%,50%,1)`);
+
     sceneCtx.beginPath();
     sceneCtx.arc(0, 0, this.__wheelR, 0, Math.PI * 2);
-    sceneCtx.fillStyle = 'pink';
     sceneCtx.closePath();
+    sceneCtx.fillStyle = brightnessGradient;
     sceneCtx.fill();
+    sceneCtx.fillStyle = hueGradient;
+    sceneCtx.globalCompositeOperation = 'multiply';
+    sceneCtx.fill();
+    sceneCtx.globalCompositeOperation = 'source-over';
+
 
     this.__shapeRegistry.wheel = this.__getRandomColor();
     hitCtx.beginPath();
