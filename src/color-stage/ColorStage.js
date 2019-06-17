@@ -152,8 +152,49 @@ export default class ColorStage extends HTMLElement {
     this.__huePicker.style.backgroundColor = this.getAttribute('color');
     this.__huePicker.style.left = `${this.__size - this.__padding - this.__hueRingRectH}px`;
     this.__huePicker.style.top = `${this.__half - this.__hueRingRectH / 2}px`;
+    this.__huePicker.addEventListener('mousedown', this.__onHuePickerDown.bind(this));
+    this.__huePicker.addEventListener('touchstart', this.__onHuePickerDown.bind(this));
 
     container.appendChild(this.__huePicker);
+  }
+
+  __onHuePickerDown(e) {
+    const self = this;
+    function onMouseMove(evt) {
+      const clientXY = self.__getClientXY(e);
+      const canvasXY = {
+        x: clientXY.x - self.__half,
+        y: clientXY.y - self.__half,
+      };
+      const requiredR = self.__hueRingInnerR + self.__hueRingRectH / 2;
+      const currentR = Math.sqrt(
+        (canvasXY.x ** 2) + (canvasXY.y ** 2),
+      );
+      const isDifferent = (
+        currentR > requiredR
+        || currentR < requiredR
+      );
+      const angle = math.getAngleFromPos(canvasXY);
+      const pickerPathCoords = math.getPosFromDegAndRadius(angle, requiredR);
+      const x = isDifferent
+        ? pickerPathCoords.x + requiredR : canvasXY.x + requiredR;
+      const y = isDifferent
+        ? pickerPathCoords.y + requiredR : canvasXY.y + requiredR;
+
+      self.__huePicker.style.top = `${y}px`;
+      self.__huePicker.style.left = `${x}px`;
+
+      return self.__preventDefault(evt);
+    }
+    function onMouseUp(evt) {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('touchmove', onMouseMove);
+      return self.__preventDefault(evt);
+    }
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('touchmove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    document.addEventListener('touchend', onMouseUp);
   }
 
   __getRandomColor() {
