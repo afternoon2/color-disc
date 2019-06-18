@@ -152,21 +152,24 @@ export default class ColorStage extends HTMLElement {
     this.__huePicker.style.backgroundColor = this.getAttribute('color');
     this.__huePicker.style.left = `${this.__size - this.__padding - this.__hueRingRectH}px`;
     this.__huePicker.style.top = `${this.__half - this.__hueRingRectH / 2}px`;
-    this.__huePicker.addEventListener('mousedown', this.__onHuePickerDown.bind(this));
-    this.__huePicker.addEventListener('touchstart', this.__onHuePickerDown.bind(this));
+    this.__addHueRingEvents();
 
     container.appendChild(this.__huePicker);
   }
 
-  __onHuePickerDown(e) {
+  __addHueRingEvents() {
     const self = this;
     function onMouseMove(evt) {
-      const clientXY = self.__getClientXY(e);
+      const clientXY = self.__getClientXY(evt);
+      // eslint-disable-next-line no-use-before-define
+      document.addEventListener('mouseup', onMouseUp);
+      // eslint-disable-next-line no-use-before-define
+      document.addEventListener('touchend', onMouseUp);
       const canvasXY = {
         x: clientXY.x - self.__half,
         y: clientXY.y - self.__half,
       };
-      const requiredR = self.__hueRingInnerR + self.__hueRingRectH / 2;
+      const requiredR = self.__hueRingInnerR;
       const currentR = Math.sqrt(
         (canvasXY.x ** 2) + (canvasXY.y ** 2),
       );
@@ -191,10 +194,15 @@ export default class ColorStage extends HTMLElement {
       document.removeEventListener('touchmove', onMouseMove);
       return self.__preventDefault(evt);
     }
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('touchmove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-    document.addEventListener('touchend', onMouseUp);
+
+    function onMouseDown(e) {
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('touchmove', onMouseMove);
+      return self.__preventDefault(e);
+    }
+
+    this.__huePicker.addEventListener('mousedown', onMouseDown);
+    this.__huePicker.addEventListener('touchstart', onMouseDown);
   }
 
   __getRandomColor() {
