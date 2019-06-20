@@ -140,7 +140,6 @@ export default class ColorStage extends HTMLElement {
   }
 
   __redrawWheel() {
-    this.__sceneCtx.moveTo(0, 0);
     this.__brightnessGradient = this.__sceneCtx.createLinearGradient(
       -this.__wheelR,
       -this.__wheelR,
