@@ -186,7 +186,7 @@ export default class ColorStage extends HTMLElement {
     this.__huePicker.classList.add(locals.huePicker);
     this.__huePicker.style.width = `${this.__hueRingRectH}px`;
     this.__huePicker.style.height = `${this.__hueRingRectH}px`;
-    this.__huePicker.style.backgroundColor = this.getAttribute('color');
+    this.__huePicker.style.backgroundColor = `hsl(${this.getAttribute('hue')}, 100%, 50%)`;
     this.__huePicker.style.left = `${this.__size - this.__padding - this.__hueRingRectH}px`;
     this.__huePicker.style.top = `${this.__half - this.__hueRingRectH / 2}px`;
     this.__huePicker.addEventListener('mousedown', this.__onHuePickerDown.bind(this));

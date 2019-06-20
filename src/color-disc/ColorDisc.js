@@ -9,8 +9,6 @@ export default class ColorDisc extends HTMLElement {
   static get observedAttributes() {
     return [
       'size',
-      'color',
-      'format',
     ];
   }
 
@@ -26,6 +24,7 @@ export default class ColorDisc extends HTMLElement {
 
   connectedCallback() {
     this.__render();
+    this.__observeStage();
   }
 
   __render() {
@@ -44,9 +43,23 @@ export default class ColorDisc extends HTMLElement {
         <color-stage
           size="${this._size}"
           padding="${this.padding}"
-          color="${this.getAttribute('color')}"
         ></color-stage>
       </div>
       `;
+  }
+
+  __observeStage() {
+    const target = this.shadowRoot.querySelector('color-stage');
+    const config = { attributes: true };
+    const callback = (mutationsList) => {
+      mutationsList.forEach((mutation) => {
+        const h = mutation.target.getAttribute('h');
+        const s = mutation.target.getAttribute('s');
+        const l = mutation.target.getAttribute('l');
+        this.setAttribute('color', `hsl(${h}, ${s}%, ${l}%)`);
+      });
+    };
+    const mutationObserver = new MutationObserver(callback);
+    mutationObserver.observe(target, config);
   }
 }
