@@ -12,12 +12,34 @@ export default class ColorStage extends HTMLElement {
     this.__init();
   }
 
+  static get observedAttributes() {
+    return ['h', 's', 'l'];
+  }
+
+  attributeChangedCallback(name, oldVal, newVal) {
+    if (oldVal !== newVal) {
+      switch (name) {
+        case 'h':
+          if (oldVal) {
+            this.__wheelPicker.style.backgroundColor = math.getRgb(
+              newVal,
+              parseFloat(this.getAttribute('s')),
+              parseFloat(this.getAttribute('l')),
+            );
+          }
+          break;
+      }
+    }
+  }
+
   __init() {
+    this.setAttribute('h', 0);
     this.__hue = 0;
     this.__mount();
     this.__initCanvasEnvironment();
     this.__drawHueRing();
     this.__drawWheel();
+    this.__drawWheelPicker();
     this.__drawHuePicker();
     this.__addCanvasListeners();
   }
@@ -93,41 +115,69 @@ export default class ColorStage extends HTMLElement {
     hitCtx.closePath();
   }
 
+  __drawWheelPicker() {
+    const { locals } = styles;
+    const container = this.shadowRoot.getElementById(this.__containerId);
+    this.__wheelPickerR = this.__size / 20;
+    this.__wheelPicker = document.createElement('a');
+    this.__wheelPicker.classList.add(locals.wheelPicker);
+    this.__wheelPicker.style.width = `${this.__wheelPickerR}px`;
+    this.__wheelPicker.style.height = `${this.__wheelPickerR}px`;
+    this.__wheelPicker.style.left = `${this.__half}px`;
+    this.__wheelPicker.style.top = `${this.__half}px`;
+    const { data } = this.__sceneCtx.getImageData(
+      this.__half,
+      this.__half,
+      1,
+      1,
+    );
+    const bgColor = `rgb(${data[0]}, ${data[1]}, ${data[2]})`;
+    this.__wheelPicker.style.backgroundColor = bgColor;
+    const hslObj = math.getHsl(data[0], data[1], data[2], true);
+    this.setAttribute('s', Math.round(hslObj.s));
+    this.setAttribute('l', Math.round(hslObj.l));
+    container.appendChild(this.__wheelPicker);
+  }
+
+  __redrawWheel() {
+    this.__sceneCtx.moveTo(0, 0);
+    this.__brightnessGradient = this.__sceneCtx.createLinearGradient(
+      -this.__wheelR,
+      -this.__wheelR,
+      -this.__wheelR,
+      this.__wheelR,
+    );
+    this.__brightnessGradient.addColorStop(0, 'white');
+    this.__brightnessGradient.addColorStop(1, 'black');
+    const hueGradient = this.__sceneCtx.createLinearGradient(
+      -this.__wheelR,
+      -this.__wheelR,
+      this.__wheelR,
+      -this.__wheelR,
+    );
+    hueGradient.addColorStop(0, `hsla(${this.getAttribute('h')},100%,50%,0)`);
+    hueGradient.addColorStop(1, `hsla(${this.getAttribute('h')},100%,50%,1)`);
+    this.__sceneCtx.beginPath();
+    this.__sceneCtx.arc(0, 0, this.__wheelR, 0, Math.PI * 2);
+    this.__sceneCtx.closePath();
+    this.__sceneCtx.fillStyle = this.__brightnessGradient;
+    this.__sceneCtx.fill();
+    this.__sceneCtx.fillStyle = hueGradient;
+    this.__sceneCtx.globalCompositeOperation = 'multiply';
+    this.__sceneCtx.fill();
+    this.__sceneCtx.globalCompositeOperation = 'source-over';
+    this.__sceneCtx.save();
+  }
+
   __drawWheel() {
-    const sceneCtx = this.__sceneCtx;
-    const hitCtx = this.__hitCtx;
     this.__wheelR = this.__hueRingOuterR / 1.61;
-    const brightnessGradient = sceneCtx.createLinearGradient(
-      -this.__wheelR,
-      -this.__wheelR,
-      -this.__wheelR,
-      this.__wheelR,
-    );
-    brightnessGradient.addColorStop(0, 'white');
-    brightnessGradient.addColorStop(1, 'black');
-    const hueGradient = sceneCtx.createLinearGradient(
-      -this.__wheelR,
-      -this.__wheelR,
-      this.__wheelR,
-      -this.__wheelR,
-    );
-    hueGradient.addColorStop(0, `hsla(${this.__hue},100%,50%,0)`);
-    hueGradient.addColorStop(1, `hsla(${this.__hue},100%,50%,1)`);
-    sceneCtx.beginPath();
-    sceneCtx.arc(0, 0, this.__wheelR, 0, Math.PI * 2);
-    sceneCtx.closePath();
-    sceneCtx.fillStyle = brightnessGradient;
-    sceneCtx.fill();
-    sceneCtx.fillStyle = hueGradient;
-    sceneCtx.globalCompositeOperation = 'multiply';
-    sceneCtx.fill();
-    sceneCtx.globalCompositeOperation = 'source-over';
+    this.__redrawWheel();
     this.__shapeRegistry.wheel = this.__getRandomColor();
-    hitCtx.beginPath();
-    hitCtx.arc(0, 0, this.__wheelR, 0, Math.PI * 2);
-    hitCtx.fillStyle = this.__shapeRegistry.wheel;
-    hitCtx.closePath();
-    hitCtx.fill();
+    this.__hitCtx.beginPath();
+    this.__hitCtx.arc(0, 0, this.__wheelR, 0, Math.PI * 2);
+    this.__hitCtx.fillStyle = this.__shapeRegistry.wheel;
+    this.__hitCtx.closePath();
+    this.__hitCtx.fill();
   }
 
   __drawHuePicker() {
@@ -158,6 +208,7 @@ export default class ColorStage extends HTMLElement {
     }
     function onMove(evt) {
       self.__positionHuePicker(evt);
+      self.__redrawWheel();
       document.addEventListener('mouseup', onUp);
       document.addEventListener('touchend', onUp);
       return self.__preventDefault(evt);
@@ -191,12 +242,9 @@ export default class ColorStage extends HTMLElement {
       const color = self.__getHitColor(e);
       if (color === self.__shapeRegistry.ring) {
         self.__positionHuePicker(e);
-      }
-    });
-    this.__scene.addEventListener('touchstart', (e) => {
-      const color = self.__getHitColor(e);
-      if (color === self.__shapeRegistry.ring) {
-        self.__positionHuePicker(e);
+        self.__redrawWheel();
+      } else if (color === self.__shapeRegistry.wheel) {
+        self.__positionWheelPicker(e);
       }
     });
   }
@@ -209,6 +257,33 @@ export default class ColorStage extends HTMLElement {
     this.__huePicker.style.left = `${absolutePickerPos.x}px`;
     this.__huePicker.style.top = `${absolutePickerPos.y}px`;
     this.__huePicker.style.backgroundColor = `hsl(${angle}, 100%, 50%)`;
+    this.__wheelPicker.style.backgroundColor = `hsl(${angle}, ${this.getAttribute('s')}%, ${this.getAttribute('l')}%)`;
+    this.setAttribute('h', angle);
+  }
+
+  __positionWheelPicker(e) {
+    const clientXY = this.__getClientXY(e);
+    const angle = this.__getAngleFromClientXY(e);
+    const maxRadius = this.__wheelR;
+    const translatedXY = this.__getTranslatedCanvasPos(clientXY);
+    const currentRadius = Math.sqrt(
+      (translatedXY.x ** 2) + (translatedXY.y ** 2),
+    );
+    const translatedPickerPos = currentRadius > maxRadius
+      ? math.getPosFromDegAndRadius(angle, maxRadius)
+      : math.getPosFromDegAndRadius(angle, currentRadius);
+    const canvasPickerPos = this.__getAbsoluteCanvasPos(translatedPickerPos);
+    const correctedPos = {
+      x: canvasPickerPos.x + this.__wheelPickerR,
+      y: canvasPickerPos.y + this.__wheelPickerR,
+    };
+    const { data } = this.__sceneCtx.getImageData(correctedPos.x, correctedPos.y, 1, 1);
+    this.__wheelPicker.style.left = `${correctedPos.x}px`;
+    this.__wheelPicker.style.top = `${correctedPos.y}px`;
+    this.__wheelPicker.style.backgroundColor = `rgb(${data[0]}, ${data[1]}, ${data[2]})`;
+    const hsl = math.getHsl(data[0], data[1], data[2], true);
+    this.setAttribute('s', Math.round(hsl.s));
+    this.setAttribute('l', Math.round(hsl.l));
   }
 
   __getHitColor(e) {
@@ -240,15 +315,15 @@ export default class ColorStage extends HTMLElement {
       y: this.__half + this.parentElement.offsetTop,
     };
     return {
-      x: pos.x - middlePoint.x,
-      y: pos.y - middlePoint.y,
+      x: Math.round(pos.x - middlePoint.x),
+      y: Math.round(pos.y - middlePoint.y),
     };
   }
 
   __getAbsoluteCanvasPos(translatedXY) {
     return {
-      x: this.__half + translatedXY.x - this.__hueRingRectH / 2,
-      y: this.__half + translatedXY.y - this.__hueRingRectH / 2,
+      x: Math.round(this.__half + translatedXY.x - this.__hueRingRectH / 2),
+      y: Math.round(this.__half + translatedXY.y - this.__hueRingRectH / 2),
     };
   }
 
