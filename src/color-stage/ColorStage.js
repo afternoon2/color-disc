@@ -157,15 +157,7 @@ export default class ColorStage extends HTMLElement {
       return self.__preventDefault(evt);
     }
     function onMove(evt) {
-      const clientXY = self.__getClientXY(evt);
-      const translatedXY = self.__getTranslatedCanvasPos(clientXY);
-      const angle = math.getAngleFromPos(translatedXY);
-      const halfPickerRadius = self.__hueRingOuterR - self.__hueRingRectH / 2;
-      const translatedPickerPos = math.getPosFromDegAndRadius(angle, halfPickerRadius);
-      const absolutePickerPos = self.__getAbsoluteCanvasPos(translatedPickerPos);
-      self.__huePicker.style.left = `${absolutePickerPos.x}px`;
-      self.__huePicker.style.top = `${absolutePickerPos.y}px`;
-      self.__huePicker.style.backgroundColor = `hsl(${angle}, 100%, 50%)`;
+      self.__positionHuePicker(evt);
       document.addEventListener('mouseup', onUp);
       document.addEventListener('touchend', onUp);
       return self.__preventDefault(evt);
@@ -185,10 +177,7 @@ export default class ColorStage extends HTMLElement {
   __addCanvasListeners() {
     const self = this;
     this.__scene.addEventListener('mousemove', (e) => {
-      const clientXY = self.__getClientXY(e);
-      const mousePos = self.__getCanvasPos(clientXY);
-      const { data } = this.__hitCtx.getImageData(mousePos.x, mousePos.y, 1, 1);
-      const color = `rgb(${data[0]}, ${data[1]}, ${data[2]})`;
+      const color = self.__getHitColor(e);
       if (
         color === self.__shapeRegistry.ring
         || color === self.__shapeRegistry.wheel
@@ -198,6 +187,35 @@ export default class ColorStage extends HTMLElement {
         self.__scene.style.cursor = 'default';
       }
     });
+    this.__scene.addEventListener('click', (e) => {
+      const color = self.__getHitColor(e);
+      if (color === self.__shapeRegistry.ring) {
+        self.__positionHuePicker(e);
+      }
+    });
+    this.__scene.addEventListener('touchstart', (e) => {
+      const color = self.__getHitColor(e);
+      if (color === self.__shapeRegistry.ring) {
+        self.__positionHuePicker(e);
+      }
+    });
+  }
+
+  __positionHuePicker(e) {
+    const angle = this.__getAngleFromClientXY(e);
+    const halfPickerRadius = this.__hueRingOuterR - this.__hueRingRectH / 2;
+    const translatedPickerPos = math.getPosFromDegAndRadius(angle, halfPickerRadius);
+    const absolutePickerPos = this.__getAbsoluteCanvasPos(translatedPickerPos);
+    this.__huePicker.style.left = `${absolutePickerPos.x}px`;
+    this.__huePicker.style.top = `${absolutePickerPos.y}px`;
+    this.__huePicker.style.backgroundColor = `hsl(${angle}, 100%, 50%)`;
+  }
+
+  __getHitColor(e) {
+    const clientXY = this.__getClientXY(e);
+    const mousePos = this.__getCanvasPos(clientXY);
+    const { data } = this.__hitCtx.getImageData(mousePos.x, mousePos.y, 1, 1);
+    return `rgb(${data[0]}, ${data[1]}, ${data[2]})`;
   }
 
   __getCanvasPos(pos) {
@@ -232,6 +250,12 @@ export default class ColorStage extends HTMLElement {
       x: this.__half + translatedXY.x - this.__hueRingRectH / 2,
       y: this.__half + translatedXY.y - this.__hueRingRectH / 2,
     };
+  }
+
+  __getAngleFromClientXY(e) {
+    const clientXY = this.__getClientXY(e);
+    const translatedXY = this.__getTranslatedCanvasPos(clientXY);
+    return math.getAngleFromPos(translatedXY);
   }
 
   __preventDefault(e) {
