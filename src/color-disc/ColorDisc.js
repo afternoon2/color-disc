@@ -1,3 +1,4 @@
+import math from '../utils/math';
 import styles from './color-disc.scss';
 
 export default class ColorDisc extends HTMLElement {
@@ -9,7 +10,7 @@ export default class ColorDisc extends HTMLElement {
   static get observedAttributes() {
     return [
       'size',
-      'color',
+      'format',
     ];
   }
 
@@ -17,55 +18,70 @@ export default class ColorDisc extends HTMLElement {
     if (oldValue !== newValue) {
       switch (name) {
         case 'size':
-          this._render();
+          this.__render();
+          this.__observeStage();
           break;
       }
     }
   }
 
   connectedCallback() {
-    this._render();
-    this._watchHue();
+    this.__render();
+    this.__observeStage();
   }
 
+  disconnectedCallback() {
+    this.__colorObserver.disconnect();
+  }
 
-  _render() {
+  __render() {
     const { locals } = styles;
+    this.setAttribute('color', 'hsl(0, 100%, 50%)');
     this.padding = 20;
-    this._size = (parseInt(this.getAttribute('size'), 10) || 390) - this.padding;
+    this._size = (parseInt(this.getAttribute('size'), 10) || 390);
     this.shadowRoot.innerHTML = `
       <style>
         ${styles.toString().replace(/\n|\t/g, '')}
       </style>
       <div
         class="${locals.colorDisc}"
-        style="width: ${this._size}px; height: ${this._size}px; left: calc(50% - ${this._size}px / 2)"
+        style="width: ${this._size}px; height: ${this._size}px;"
       >
-        <main class="${locals.colorDisc__content}">
-          <hue-ring padding="${this.padding}" size="${this._size - this.padding * 2}"></hue-ring>
-          <color-wheel size="${this._size - this.padding * 2}" hue="0"></color-wheel>
-        </main>
+        <color-stage
+          size="${this._size}"
+          padding="${this.padding}"
+        ></color-stage>
       </div>
       `;
   }
 
-  _watchHue() {
-    const hueRing = this.shadowRoot.querySelector('hue-ring');
-    const colorWheel = this.shadowRoot.querySelector('color-wheel');
-    const MutationObserver = window.MutationObserver
-      || window.WebKitMutationObserver
-      || window.MozMutationObserver;
-    const config = {
-      attributes: true,
-    };
-    const callback = function callback(mutationsList) {
+  __observeStage() {
+    const target = this.shadowRoot.querySelector('color-stage');
+    const config = { attributes: true };
+    const callback = (mutationsList) => {
       mutationsList.forEach((mutation) => {
-        if (mutation.attributeName === 'hue') {
-          colorWheel.setAttribute('hue', hueRing.getAttribute('hue'));
+        const h = mutation.target.getAttribute('h');
+        const s = mutation.target.getAttribute('s');
+        const l = mutation.target.getAttribute('l');
+        switch (this.getAttribute('format')) {
+          case 'hsl':
+            this.setAttribute('color', `hsl(${h}, ${s}%, ${l}%)`);
+            break;
+          case 'rgb':
+            this.setAttribute('color', math.getRgb(h, s, l));
+            break;
+          case 'hex':
+            this.setAttribute('color', math.getHex(
+              ...Object.values(math.getRgb(h, s, l, true)),
+            ));
+            break;
+          default:
+            this.setAttribute('color', `hsl(${h}, ${s}%, ${l}%)`);
+            break;
         }
       });
     };
-    const observer = new MutationObserver(callback);
-    observer.observe(hueRing, config);
+    this.__colorObserver = new MutationObserver(callback);
+    this.__colorObserver.observe(target, config);
   }
 }
