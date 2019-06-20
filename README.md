@@ -28,7 +28,7 @@ All you need to do is to add `color-disc` tag to your HTML markup:
 <color-disc></color-disc>
 ```
 
-By default, Color Disc has absolute position and a size of `390px`, but you can customize it by native css styles and by setting following attributes:
+By default, Color Disc has absolute position and a size of `390px`, but you can customize it with native css styles and by setting following attributes:
 
 - `size` - number (in pixels)
 - `format` - output color format - `hsl`, `hsv`, `rgb` or `hex`
