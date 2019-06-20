@@ -1,9 +1,11 @@
 import ColorDisc from './color-disc/ColorDisc';
-import ColorStage from './color-stage/ColorStage';
+import HueRing from './hue-ring/HueRing';
+import ColorWheel from './color-wheel/ColorWheel';
 
 (() => {
   const elements = [
-    { tag: 'color-stage', node: ColorStage },
+    { tag: 'hue-ring', node: HueRing },
+    { tag: 'color-wheel', node: ColorWheel },
     { tag: 'color-disc', node: ColorDisc },
   ];
   elements.forEach((element) => {
