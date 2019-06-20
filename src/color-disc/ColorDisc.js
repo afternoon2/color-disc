@@ -1,3 +1,4 @@
+import math from '../utils/math';
 import styles from './color-disc.scss';
 
 export default class ColorDisc extends HTMLElement {
@@ -9,6 +10,7 @@ export default class ColorDisc extends HTMLElement {
   static get observedAttributes() {
     return [
       'size',
+      'format',
     ];
   }
 
@@ -17,6 +19,7 @@ export default class ColorDisc extends HTMLElement {
       switch (name) {
         case 'size':
           this.__render();
+          this.__observeStage();
           break;
       }
     }
@@ -60,7 +63,22 @@ export default class ColorDisc extends HTMLElement {
         const h = mutation.target.getAttribute('h');
         const s = mutation.target.getAttribute('s');
         const l = mutation.target.getAttribute('l');
-        this.setAttribute('color', `hsl(${h}, ${s}%, ${l}%)`);
+        switch (this.getAttribute('format')) {
+          case 'hsl':
+            this.setAttribute('color', `hsl(${h}, ${s}%, ${l}%)`);
+            break;
+          case 'rgb':
+            this.setAttribute('color', math.getRgb(h, s, l));
+            break;
+          case 'hex':
+            this.setAttribute('color', math.getHex(
+              ...Object.values(math.getRgb(h, s, l, true)),
+            ));
+            break;
+          default:
+            this.setAttribute('color', `hsl(${h}, ${s}%, ${l}%)`);
+            break;
+        }
       });
     };
     this.__colorObserver = new MutationObserver(callback);

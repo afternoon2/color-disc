@@ -31,7 +31,7 @@ All you need to do is to add `color-disc` tag to your HTML markup:
 By default, Color Disc has absolute position and a size of `390px`, but you can customize it with native css styles and by setting following attributes:
 
 - `size` - number (in pixels)
-- `format` - output color format - `hsl`, `hsv`, `rgb` or `hex`
+- `format` - output color format - `hsl`, `rgb` or `hex`
 
 So the custom configuration can look like this:
 
