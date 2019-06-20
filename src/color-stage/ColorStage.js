@@ -25,7 +25,6 @@ export default class ColorStage extends HTMLElement {
   __mount() {
     const containerStyle = 'position: relative;';
     const canvasStyle = 'position: absolute;';
-
     this.__sceneCanvasId = uuid();
     this.__containerId = uuid();
     this.shadowRoot.innerHTML = `
@@ -48,7 +47,6 @@ export default class ColorStage extends HTMLElement {
     this.__sceneCtx = this.__scene.getContext('2d');
     this.__hitCanvas = document.createElement('canvas');
     this.__hitCtx = this.__hitCanvas.getContext('2d');
-    this.__padding = parseInt(this.getAttribute('padding'), 10);
     this.__scene.width = this.__size;
     this.__scene.height = this.__size;
     this.__hitCanvas.width = this.__size;
@@ -61,10 +59,8 @@ export default class ColorStage extends HTMLElement {
     this.__hueRingOuterR = this.__half - this.__padding;
     this.__hueRingInnerR = this.__hueRingOuterR * 0.75;
     this.__hueRingRectH = this.__hueRingOuterR - this.__hueRingInnerR;
-
     const sceneCtx = this.__sceneCtx;
     const hitCtx = this.__hitCtx;
-
     for (let i = 0; i < 360; i += 1) {
       sceneCtx.save();
       sceneCtx.rotate(math.degToRad(i));
@@ -88,7 +84,6 @@ export default class ColorStage extends HTMLElement {
       sceneCtx.restore();
       sceneCtx.moveTo(0, 0);
     }
-
     this.__shapeRegistry.ring = this.__getRandomColor();
     hitCtx.fillStyle = this.__shapeRegistry.ring;
     hitCtx.beginPath();
@@ -101,9 +96,7 @@ export default class ColorStage extends HTMLElement {
   __drawWheel() {
     const sceneCtx = this.__sceneCtx;
     const hitCtx = this.__hitCtx;
-
     this.__wheelR = this.__hueRingOuterR / 1.61;
-
     const brightnessGradient = sceneCtx.createLinearGradient(
       -this.__wheelR,
       -this.__wheelR,
@@ -112,7 +105,6 @@ export default class ColorStage extends HTMLElement {
     );
     brightnessGradient.addColorStop(0, 'white');
     brightnessGradient.addColorStop(1, 'black');
-
     const hueGradient = sceneCtx.createLinearGradient(
       -this.__wheelR,
       -this.__wheelR,
@@ -121,7 +113,6 @@ export default class ColorStage extends HTMLElement {
     );
     hueGradient.addColorStop(0, `hsla(${this.__hue},100%,50%,0)`);
     hueGradient.addColorStop(1, `hsla(${this.__hue},100%,50%,1)`);
-
     sceneCtx.beginPath();
     sceneCtx.arc(0, 0, this.__wheelR, 0, Math.PI * 2);
     sceneCtx.closePath();
@@ -131,8 +122,6 @@ export default class ColorStage extends HTMLElement {
     sceneCtx.globalCompositeOperation = 'multiply';
     sceneCtx.fill();
     sceneCtx.globalCompositeOperation = 'source-over';
-
-
     this.__shapeRegistry.wheel = this.__getRandomColor();
     hitCtx.beginPath();
     hitCtx.arc(0, 0, this.__wheelR, 0, Math.PI * 2);
@@ -144,7 +133,6 @@ export default class ColorStage extends HTMLElement {
   __drawHuePicker() {
     const { locals } = styles;
     const container = this.shadowRoot.getElementById(this.__containerId);
-
     this.__huePicker = document.createElement('a');
     this.__huePicker.classList.add(locals.huePicker);
     this.__huePicker.style.width = `${this.__hueRingRectH}px`;
@@ -152,71 +140,53 @@ export default class ColorStage extends HTMLElement {
     this.__huePicker.style.backgroundColor = this.getAttribute('color');
     this.__huePicker.style.left = `${this.__size - this.__padding - this.__hueRingRectH}px`;
     this.__huePicker.style.top = `${this.__half - this.__hueRingRectH / 2}px`;
-    this.__addHueRingEvents();
-
+    this.__huePicker.addEventListener('mousedown', this.__onHuePickerDown.bind(this));
+    this.__huePicker.addEventListener('touchstart', this.__onHuePickerDown.bind(this));
     container.appendChild(this.__huePicker);
   }
 
-  __addHueRingEvents() {
+  __onHuePickerDown(e) {
     const self = this;
-    function onMouseMove(evt) {
+    function onUp(evt) {
+      // eslint-disable-next-line no-use-before-define
+      document.removeEventListener('mousemove', onMove);
+      // eslint-disable-next-line no-use-before-define
+      document.removeEventListener('touchmove', onMove);
+      document.addEventListener('mouseup', onUp);
+      document.addEventListener('touchend', onUp);
+      return self.__preventDefault(evt);
+    }
+    function onMove(evt) {
       const clientXY = self.__getClientXY(evt);
-      // eslint-disable-next-line no-use-before-define
-      document.addEventListener('mouseup', onMouseUp);
-      // eslint-disable-next-line no-use-before-define
-      document.addEventListener('touchend', onMouseUp);
-      const canvasXY = {
-        x: clientXY.x - self.__half,
-        y: clientXY.y - self.__half,
-      };
-      const requiredR = self.__hueRingInnerR;
-      const currentR = Math.sqrt(
-        (canvasXY.x ** 2) + (canvasXY.y ** 2),
-      );
-      const isDifferent = (
-        currentR > requiredR
-        || currentR < requiredR
-      );
-      const angle = math.getAngleFromPos(canvasXY);
-      const pickerPathCoords = math.getPosFromDegAndRadius(angle, requiredR);
-      const x = isDifferent
-        ? pickerPathCoords.x + requiredR : canvasXY.x + requiredR;
-      const y = isDifferent
-        ? pickerPathCoords.y + requiredR : canvasXY.y + requiredR;
-
-      self.__huePicker.style.top = `${y}px`;
-      self.__huePicker.style.left = `${x}px`;
-
+      const translatedXY = self.__getTranslatedCanvasPos(clientXY);
+      const angle = math.getAngleFromPos(translatedXY);
+      const halfPickerRadius = self.__hueRingOuterR - self.__hueRingRectH / 2;
+      const translatedPickerPos = math.getPosFromDegAndRadius(angle, halfPickerRadius);
+      const absolutePickerPos = self.__getAbsoluteCanvasPos(translatedPickerPos);
+      self.__huePicker.style.left = `${absolutePickerPos.x}px`;
+      self.__huePicker.style.top = `${absolutePickerPos.y}px`;
+      self.__huePicker.style.backgroundColor = `hsl(${angle}, 100%, 50%)`;
+      document.addEventListener('mouseup', onUp);
+      document.addEventListener('touchend', onUp);
       return self.__preventDefault(evt);
     }
-    function onMouseUp(evt) {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('touchmove', onMouseMove);
-      return self.__preventDefault(evt);
-    }
-
-    function onMouseDown(e) {
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('touchmove', onMouseMove);
-      return self.__preventDefault(e);
-    }
-
-    this.__huePicker.addEventListener('mousedown', onMouseDown);
-    this.__huePicker.addEventListener('touchstart', onMouseDown);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('touchmove', onMove);
+    return this.__preventDefault(e);
   }
 
   __getRandomColor() {
     const r = Math.round(Math.random() * 255);
     const g = Math.round(Math.random() * 255);
     const b = Math.round(Math.random() * 255);
-
     return `rgb(${r}, ${g}, ${b})`;
   }
 
   __addCanvasListeners() {
     const self = this;
     this.__scene.addEventListener('mousemove', (e) => {
-      const mousePos = self.__getCanvasPos(e);
+      const clientXY = self.__getClientXY(e);
+      const mousePos = self.__getCanvasPos(clientXY);
       const { data } = this.__hitCtx.getImageData(mousePos.x, mousePos.y, 1, 1);
       const color = `rgb(${data[0]}, ${data[1]}, ${data[2]})`;
       if (
@@ -230,20 +200,10 @@ export default class ColorStage extends HTMLElement {
     });
   }
 
-  __save() {
-    this.__sceneCtx.save();
-    this.__hitCtx.save();
-  }
-
-  __restore() {
-    this.__sceneCtx.restore();
-    this.__hitCtx.restore();
-  }
-
-  __getCanvasPos(e) {
+  __getCanvasPos(pos) {
     return {
-      x: e.clientX - this.parentElement.offsetLeft,
-      y: e.clientY - this.parentElement.offsetTop,
+      x: pos.x - this.parentElement.offsetLeft,
+      y: pos.y - this.parentElement.offsetTop,
     };
   }
 
@@ -253,6 +213,24 @@ export default class ColorStage extends HTMLElement {
         ? e.touches[0].clientX : e.clientX,
       y: e.type === 'touchmove'
         ? e.touches[0].clientY : e.clientY,
+    };
+  }
+
+  __getTranslatedCanvasPos(pos) {
+    const middlePoint = {
+      x: this.__half + this.parentElement.offsetLeft,
+      y: this.__half + this.parentElement.offsetTop,
+    };
+    return {
+      x: pos.x - middlePoint.x,
+      y: pos.y - middlePoint.y,
+    };
+  }
+
+  __getAbsoluteCanvasPos(translatedXY) {
+    return {
+      x: this.__half + translatedXY.x - this.__hueRingRectH / 2,
+      y: this.__half + translatedXY.y - this.__hueRingRectH / 2,
     };
   }
 
