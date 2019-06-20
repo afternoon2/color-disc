@@ -27,6 +27,10 @@ export default class ColorDisc extends HTMLElement {
     this.__observeStage();
   }
 
+  disconnectedCallback() {
+    this.__colorObserver.disconnect();
+  }
+
   __render() {
     const { locals } = styles;
     this.setAttribute('color', 'hsl(0, 100%, 50%)');
@@ -59,7 +63,7 @@ export default class ColorDisc extends HTMLElement {
         this.setAttribute('color', `hsl(${h}, ${s}%, ${l}%)`);
       });
     };
-    const mutationObserver = new MutationObserver(callback);
-    mutationObserver.observe(target, config);
+    this.__colorObserver = new MutationObserver(callback);
+    this.__colorObserver.observe(target, config);
   }
 }
