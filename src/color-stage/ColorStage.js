@@ -202,8 +202,8 @@ export default class ColorStage extends HTMLElement {
       document.removeEventListener('mousemove', onMove);
       // eslint-disable-next-line no-use-before-define
       document.removeEventListener('touchmove', onMove);
-      document.addEventListener('mouseup', onUp);
-      document.addEventListener('touchend', onUp);
+      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('touchend', onUp);
       return self.__preventDefault(evt);
     }
     function onMove(evt) {
