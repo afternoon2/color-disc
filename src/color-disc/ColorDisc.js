@@ -34,18 +34,18 @@ export default class ColorDisc extends HTMLElement {
     this.__colorObserver.disconnect();
   }
 
-
-  _render() {
+  __render() {
     const { locals } = styles;
+    this.setAttribute('color', 'hsl(0, 100%, 50%)');
     this.padding = 20;
-    this._size = (parseInt(this.getAttribute('size'), 10) || 390) - this.padding;
+    this._size = (parseInt(this.getAttribute('size'), 10) || 390);
     this.shadowRoot.innerHTML = `
       <style>
         ${styles.toString().replace(/\n|\t/g, '')}
       </style>
       <div
         class="${locals.colorDisc}"
-        style="width: ${this._size}px; height: ${this._size}px; left: calc(50% - ${this._size}px / 2)"
+        style="width: ${this._size}px; height: ${this._size}px;"
       >
         <color-stage
           size="${this._size}"
