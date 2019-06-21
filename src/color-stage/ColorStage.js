@@ -137,6 +137,10 @@ export default class ColorStage extends HTMLElement {
     this.setAttribute('s', Math.round(hslObj.s));
     this.setAttribute('l', Math.round(hslObj.l));
     container.appendChild(this.__wheelPicker);
+    this.__makeDraggable(
+      this.__wheelPicker,
+      e => console.log(e),
+    );
   }
 
   __redrawWheel() {
@@ -189,32 +193,46 @@ export default class ColorStage extends HTMLElement {
     this.__huePicker.style.backgroundColor = `hsl(${this.getAttribute('hue')}, 100%, 50%)`;
     this.__huePicker.style.left = `${this.__size - this.__padding - this.__hueRingRectH}px`;
     this.__huePicker.style.top = `${this.__half - this.__hueRingRectH / 2}px`;
-    this.__huePicker.addEventListener('mousedown', this.__onHuePickerDown.bind(this));
-    this.__huePicker.addEventListener('touchstart', this.__onHuePickerDown.bind(this));
+    this.__makeDraggable(
+      this.__huePicker,
+      this.__huePickerMoveHandler.bind(this),
+    );
     container.appendChild(this.__huePicker);
   }
 
-  __onHuePickerDown(e) {
+  __huePickerMoveHandler(e) {
+    this.__positionHuePicker(e);
+    this.__redrawWheel();
+  }
+
+  __makeDraggable(element, moveHandler) {
+    element.addEventListener('mousedown', e => this.__onElementDown(
+      e, moveHandler,
+    ));
+    element.addEventListener('touchstart', e => this.__onElementDown(
+      e, moveHandler,
+    ));
+  }
+
+  __onElementDown(e, moveHandler) {
     const self = this;
-    function onUp(evt) {
-      // eslint-disable-next-line no-use-before-define
-      document.removeEventListener('mousemove', onMove);
-      // eslint-disable-next-line no-use-before-define
-      document.removeEventListener('touchmove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      document.removeEventListener('touchend', onUp);
-      return self.__preventDefault(evt);
-    }
     function onMove(evt) {
-      self.__positionHuePicker(evt);
-      self.__redrawWheel();
-      document.addEventListener('mouseup', onUp);
-      document.addEventListener('touchend', onUp);
-      return self.__preventDefault(evt);
+      moveHandler(evt);
+      document.addEventListener('mouseup', event => self.__onElementUp(event)(onMove));
+      document.addEventListener('touchend', event => self.__onElementUp(event)(onMove));
     }
     document.addEventListener('mousemove', onMove);
     document.addEventListener('touchmove', onMove);
-    return this.__preventDefault(e);
+  }
+
+  __onElementUp() {
+    const self = this;
+    return (onMove) => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('mouseup', self.__onElementUp);
+      document.removeEventListener('touchend', self.__onElementUp);
+    };
   }
 
   __getRandomColor() {
@@ -330,11 +348,5 @@ export default class ColorStage extends HTMLElement {
     const clientXY = this.__getClientXY(e);
     const translatedXY = this.__getTranslatedCanvasPos(clientXY);
     return math.getAngleFromPos(translatedXY);
-  }
-
-  __preventDefault(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    return false;
   }
 }
