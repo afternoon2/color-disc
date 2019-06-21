@@ -139,7 +139,7 @@ export default class ColorStage extends HTMLElement {
     container.appendChild(this.__wheelPicker);
     this.__makeDraggable(
       this.__wheelPicker,
-      e => console.log(e),
+      this.__positionWheelPicker.bind(this),
     );
   }
 
@@ -297,8 +297,8 @@ export default class ColorStage extends HTMLElement {
     const { data } = this.__sceneCtx.getImageData(correctedPos.x, correctedPos.y, 1, 1);
     this.__wheelPicker.style.left = `${correctedPos.x}px`;
     this.__wheelPicker.style.top = `${correctedPos.y}px`;
-    this.__wheelPicker.style.backgroundColor = `rgb(${data[0]}, ${data[1]}, ${data[2]})`;
     const hsl = math.getHsl(data[0], data[1], data[2], true);
+    this.__wheelPicker.style.backgroundColor = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
     this.setAttribute('s', Math.round(hsl.s));
     this.setAttribute('l', Math.round(hsl.l));
   }
