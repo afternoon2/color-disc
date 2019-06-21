@@ -11,7 +11,7 @@ export default {
     if (radians) {
       return angle;
     }
-    return Math.round(this.radToDeg(angle));
+    return Math.floor(this.radToDeg(angle));
   },
   getPosFromDegAndRadius(deg, radius) {
     const angleRad = this.degToRad(deg);
