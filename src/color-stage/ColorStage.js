@@ -144,6 +144,16 @@ export default class ColorStage extends HTMLElement {
   }
 
   __redrawWheel() {
+    this.__sceneCtx.restore();
+    if (
+      parseInt(this.getAttribute('h'), 10) !== 0
+    ) {
+      this.__sceneCtx.beginPath();
+      this.__sceneCtx.arc(0, 0, this.__wheelR + 1, 0, Math.PI * 2);
+      this.__sceneCtx.closePath();
+      this.__sceneCtx.fillStyle = '#3e3e3e';
+      this.__sceneCtx.fill();
+    }
     this.__brightnessGradient = this.__sceneCtx.createLinearGradient(
       -this.__wheelR,
       -this.__wheelR,
@@ -291,8 +301,8 @@ export default class ColorStage extends HTMLElement {
       : math.getPosFromDegAndRadius(angle, currentRadius);
     const canvasPickerPos = this.__getAbsoluteCanvasPos(translatedPickerPos);
     const correctedPos = {
-      x: canvasPickerPos.x + this.__wheelPickerR,
-      y: canvasPickerPos.y + this.__wheelPickerR,
+      x: canvasPickerPos.x + this.__wheelPickerR / 2,
+      y: canvasPickerPos.y + this.__wheelPickerR / 2,
     };
     const { data } = this.__sceneCtx.getImageData(correctedPos.x, correctedPos.y, 1, 1);
     this.__wheelPicker.style.left = `${correctedPos.x}px`;
