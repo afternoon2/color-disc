@@ -287,6 +287,7 @@ export default class ColorStage extends HTMLElement {
   }
 
   __positionWheelPicker(e) {
+    const pixelMargin = 2;
     const clientXY = this.__getClientXY(e);
     const angle = this.__getAngleFromClientXY(e);
     const maxRadius = this.__wheelR;
@@ -294,8 +295,8 @@ export default class ColorStage extends HTMLElement {
     const currentRadius = Math.sqrt(
       (translatedXY.x ** 2) + (translatedXY.y ** 2),
     );
-    const translatedPickerPos = currentRadius > maxRadius
-      ? math.getPosFromDegAndRadius(angle, maxRadius - 2)
+    const translatedPickerPos = currentRadius > maxRadius - pixelMargin
+      ? math.getPosFromDegAndRadius(angle, maxRadius - pixelMargin)
       : math.getPosFromDegAndRadius(angle, currentRadius);
     const canvasPickerPos = this.__getAbsoluteCanvasPos(translatedPickerPos, true);
     const correctedPos = {
