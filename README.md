@@ -3,6 +3,8 @@
 
 [![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/color-disc)
 
+[Demo on CodePen](https://codepen.io/jakub_antolak/pen/LKxzpJ)
+
 <p style="width: 240px; height: auto;">
   <img src="https://github.com/afternoon2/color-disc/blob/assets/color-disc.png?raw=true" alt="Color Disc Screen" />
 </p>
