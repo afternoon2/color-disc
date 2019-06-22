@@ -1,7 +1,7 @@
 # ColorDisc.js
 ## [Procreate](https://procreate.art/)-like disc color picker for the web
 
-[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/afternoon2/color-disc)
+[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/color-disc)
 
 <p style="width: 240px; height: auto;">
   <img src="https://github.com/afternoon2/color-disc/blob/assets/color-disc.png?raw=true" alt="Color Disc Screen" />
