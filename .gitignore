@@ -4,4 +4,4 @@ dist/**
 .vscode
 src/*.css
 coverage
-server/color-disc.js
+server/*.js
