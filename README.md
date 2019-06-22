@@ -22,7 +22,7 @@ Add this snippet to your root javascript file:
 ```
 
 ### CDN
-`<script src="https://unpkg.com/color-disc@1.0.0/color-disc.min.js"></script>`
+`<script src="https://unpkg.com/color-disc@1.0.0/dist/color-disc.min.js"></script>`
 
 ## Usage
 
