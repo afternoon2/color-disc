@@ -45,7 +45,7 @@ export default class ColorStage extends HTMLElement {
   }
 
   __mount() {
-    const containerStyle = 'position: relative;';
+    const containerStyle = `position: relative; width: ${this.getAttribute('size')}`;
     const canvasStyle = 'position: absolute;';
     this.__sceneCanvasId = uuid();
     this.__containerId = uuid();
@@ -73,6 +73,8 @@ export default class ColorStage extends HTMLElement {
     this.__scene.height = this.__size;
     this.__hitCanvas.width = this.__size;
     this.__hitCanvas.height = this.__size;
+    this.__sceneCtx.fillStyle = '#3e3e3e';
+    this.__sceneCtx.fillRect(0, 0, this.__size, this.__size);
     this.__sceneCtx.translate(this.__half, this.__half);
     this.__hitCtx.translate(this.__half, this.__half);
   }
