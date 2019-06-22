@@ -14,8 +14,8 @@ module.exports = merge({
   plugins: [
     new CopyWebpackPlugin([
       {
-        from: path.resolve(__dirname, '../dist/index.js'),
-        to: path.resolve(__dirname, '../server/index.js')
+        from: path.resolve(__dirname, '../dist/color-disc.min.js'),
+        to: path.resolve(__dirname, '../server/color-disc.min.js')
       }
     ])
   ]

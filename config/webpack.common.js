@@ -4,7 +4,7 @@ module.exports = {
   entry: path.resolve(__dirname, '../src/index.js'),
   output: {
     path: path.resolve(__dirname, '../dist'),
-    filename: 'index.js',
+    filename: 'color-disc.min.js',
     library: 'ColorDisc',
     libraryTarget: 'umd'
   },

@@ -1,8 +1,8 @@
 {
   "name": "color-disc",
   "version": "0.0.1",
-  "description": "Procreate-like color picker as a web custom element",
-  "main": "dist/smartsettings.js",
+  "description": "Disc color picker for the web",
+  "main": "dist/color-disc.min.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/afternoon2/color-disc"
