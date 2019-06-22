@@ -328,8 +328,8 @@ export default class ColorStage extends HTMLElement {
 
   __getCanvasPos(pos) {
     return {
-      x: pos.x - this.parentElement.offsetLeft,
-      y: pos.y - this.parentElement.offsetTop,
+      x: pos.x - this.parentElement.getBoundingClientRect().left,
+      y: pos.y - this.parentElement.getBoundingClientRect().top,
     };
   }
 
@@ -344,8 +344,8 @@ export default class ColorStage extends HTMLElement {
 
   __getTranslatedCanvasPos(pos) {
     const middlePoint = {
-      x: this.__half + this.parentElement.offsetLeft,
-      y: this.__half + this.parentElement.offsetTop,
+      x: this.__half + this.parentElement.getBoundingClientRect().left,
+      y: this.__half + this.parentElement.getBoundingClientRect().top,
     };
     return {
       x: Math.round(pos.x - middlePoint.x),
