@@ -1,7 +1,5 @@
-# [README DRAFT]
-
 # ColorDisc.js
-[Procreate-ish](https://procreate.art/) disc color picker for the web
+## [Procreate](https://procreate.art/)-like disc color picker for the web
 
 ## Installation
 
@@ -11,32 +9,30 @@
 
 `npm install --save color-disc`
 
-Add this snippet to your main javascript file:
+Add this snippet to your root javascript file:
 
 ```javascript
-  import ColorDisc from 'color-disc';
+  import 'color-disc';
 ```
 
-### From cdn
+### CDN
 `<script src="https://unpkg.com/color-disc@1.0.0/color-disc.min.js"></script>`
 
 ## Usage
 
-All you need to do is to add `color-disc` tag to your HTML markup:
+Add `color-disc` to your HTML markup:
 
 ```html
 <color-disc></color-disc>
 ```
 
-By default, Color Disc has absolute position and a size of `390px`, but you can customize it with native css styles and by setting following attributes:
+You can customize ColorDisc by setting following attributes:
 
-- `size` - number (in pixels)
-- `format` - output color format - `hsl`, `rgb` or `hex`
-
-So the custom configuration can look like this:
+- `size` - number (in pixels, defaults to 390px)
+- `format` - output color format - `hsl`, `rgb` or `hex` (defaults to hsl)
 
 ```html
-<color-disc size="200" format="hsv"></color-disc>
+<color-disc size="200" format="rgb"></color-disc>
 ```
 
 To read the picked color use `element.getAttribute()` method:
