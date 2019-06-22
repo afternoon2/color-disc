@@ -1,6 +1,6 @@
 {
   "name": "color-disc",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Disc color picker for the web",
   "main": "dist/color-disc.min.js",
   "repository": {
